@@ -1,0 +1,31 @@
+name: Branch Naming Convention
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get branch name
+        id: branch_name
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Validate branch naming convention
+        run: |
+          if [[ ! "$BRANCH_NAME" =~ ^(fix|feat|test)/[0-9]+/[^_]+$ ]]; then
+            echo "❌ Invalid branch name: '$BRANCH_NAME'"
+            echo "✅ Expected format: '<scope>/<issue number>/<branch-name>'"
+            echo "🔹 Scope must be 'fix', 'feat', or 'test'"
+            echo "🔹 Issue number must be a valid number"
+            echo "🔹 Branch name must use '-' instead of '_'"
+            exit 1
+          fi
+
+      - name: Success Message
+        run: echo "✅ Branch name '$BRANCH_NAME' is valid!"
