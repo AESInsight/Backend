@@ -3,6 +3,7 @@ bin/
 obj/
 Debug/
 Release/
+node_modules/
 
 # Visual Studio and VS Code
 .vscode/

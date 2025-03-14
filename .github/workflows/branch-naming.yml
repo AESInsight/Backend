@@ -28,4 +28,4 @@ jobs:
           fi
 
       - name: Success Message
-        run: echo "✅ Branch name '$BRANCH_NAME' is valid!"
+        run: echo "Branch name '$BRANCH_NAME' is valid!"
