@@ -1,0 +1,60 @@
+# Build results
+bin/
+obj/
+Debug/
+Release/
+node_modules/
+
+# Visual Studio and VS Code
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider/JetBrains
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Auto-generated files
+*.generated.cs
+
+# User secrets
+secrets.json
+
+# ASP.NET Core environment files
+appsettings.Development.json
+appsettings.*.json
+
+# Publish output
+publish/
+out/
+
+# Dotnet CLI tool artifacts
+/.tools/
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Test results
+TestResults/
+
+# Nuke build
+/build/
+temp/
+
+# Coverage tools
+coverage/
+*.coverage
+*.coveragexml
+
+# Local http files
+*.http
