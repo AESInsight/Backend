@@ -20,9 +20,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryCount: 10,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
-        mySqlOptions.MaxPoolSize(dbConfig?.MaxPoolSize ?? 100);
-        mySqlOptions.MinimumPoolSize(dbConfig?.MinPoolSize ?? 5);
-        mySqlOptions.ConnectionLifetime(TimeSpan.FromSeconds(dbConfig?.ConnectionLifetime ?? 300));
     });
 });
 
@@ -41,26 +38,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 
 // Add database connection test endpoint
 app.MapGet("/api/database/test", async (ApplicationDbContext dbContext) =>
@@ -84,10 +61,3 @@ app.MapGet("/api/database/test", async (ApplicationDbContext dbContext) =>
         return Results.BadRequest(new { Status = "Error", Message = $"Connection test failed: {ex.Message}" });
     }
 });
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
