@@ -14,13 +14,13 @@ public static class DbSeeder
             {
                 Id = 1,
                 Name = "Test Item 1",
-                Description = "This is a test item"
+                Description = "This is a new test item"
             },
             new YourModel
             {
                 Id = 2,
                 Name = "Test Item 2",
-                Description = "This is another test item"
+                Description = "This is another newer test item"
             }
         );
     }

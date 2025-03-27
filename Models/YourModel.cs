@@ -1,8 +1,9 @@
-namespace Backend.Models;
-
-public class YourModel
+namespace Backend.Models
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-} 
+    public class YourModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    } 
+}
