@@ -5,23 +5,35 @@ on:
     branches-ignore:
       - main
   pull_request:
-    branches-ignore:
+    branches:
+      - develop
       - main
 
 jobs:
   validate-branch-name:
     runs-on: ubuntu-latest
     steps:
-      - name: Get branch name
+      - name: Get source branch name
         id: branch_name
+        shell: bash
+        run: echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+
+      - name: Debug branch name
+        shell: bash
+        run: "echo 'Branch name detected: $BRANCH_NAME'"
+
+      - name: Check if merging develop into main
+        id: skip_check
+        shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          if [[ "${{ github.base_ref }}" == "main" && "${{ github.head_ref }}" == "develop" ]]; then
+            echo "Skipping branch name validation for develop merge into main."
+            echo "SKIP=true" >> $GITHUB_ENV
           fi
 
       - name: Validate branch naming convention
+        if: env.SKIP != 'true'
+        shell: bash
         run: |
           if [[ ! "$BRANCH_NAME" =~ ^(fix|feat|test)/[0-9]+/[^_]+$ ]]; then
             echo "Invalid branch name: '$BRANCH_NAME'"
@@ -33,4 +45,6 @@ jobs:
           fi
 
       - name: Success Message
+        if: env.SKIP != 'true'
+        shell: bash
         run: echo "Branch name '$BRANCH_NAME' is valid!"
