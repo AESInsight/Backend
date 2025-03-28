@@ -2,13 +2,20 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Config;
 using Backend.Data;
 using Backend.Extensions;
+using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add environment variables
+builder.Configuration.AddEnvironmentVariables();
 
 // Configure services
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureSwagger();
 builder.Services.ConfigureCors();
+
+// Register services
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 var app = builder.Build();
 

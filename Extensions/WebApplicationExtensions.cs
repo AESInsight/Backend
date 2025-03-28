@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Backend.Data;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Backend.Models;
 
 namespace Backend.Extensions
 {
@@ -49,12 +50,12 @@ namespace Backend.Extensions
                     }
                 });
 
-                endpoints.MapGet("/api/models", async (ApplicationDbContext dbContext) =>
+                endpoints.MapGet("/api/employees", async (ApplicationDbContext dbContext) =>
                 {
                     try
                     {
-                        var models = await dbContext.YourModels.ToListAsync();
-                        return Results.Ok(models);
+                        var employees = await dbContext.Employee.ToListAsync();
+                        return Results.Ok(employees);
                     }
                     catch (Exception ex)
                     {
@@ -62,16 +63,16 @@ namespace Backend.Extensions
                     }
                 });
 
-                endpoints.MapGet("/api/models/{id}", async (int id, ApplicationDbContext dbContext) =>
+                endpoints.MapGet("/api/employees/{id}", async (string id, ApplicationDbContext dbContext) =>
                 {
                     try
                     {
-                        var model = await dbContext.YourModels.FindAsync(id);
-                        if (model == null)
+                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
+                        if (employee == null)
                         {
-                            return Results.NotFound(new { Status = "NotFound", Message = $"Record with ID {id} not found." });
+                            return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
                         }
-                        return Results.Ok(model);
+                        return Results.Ok(employee);
                     }
                     catch (Exception ex)
                     {
