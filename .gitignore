@@ -58,3 +58,4 @@ coverage/
 
 # Local http files
 *.http
+.fake
