@@ -11,9 +11,7 @@ namespace Backend.Extensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var dbConfig = configuration.GetSection("DatabaseConfig").Get<DatabaseConfig>();
-            var connectionString = Environment.GetEnvironmentVariable("GH_SECRET_CONNECTIONSTRING") 
-                ?? dbConfig?.ConnectionString 
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string not found");
 
             services.AddDbContext<ApplicationDbContext>(options =>

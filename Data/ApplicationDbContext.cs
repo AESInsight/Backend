@@ -11,14 +11,11 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<YourModel> YourModels { get; set; }
+    public DbSet<EmployeeModel> Employees { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
-        // Apply seed data
-        DbSeeder.SeedData(modelBuilder);
     }
 
     // Add your DbSet properties here for your entities
