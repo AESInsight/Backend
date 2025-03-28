@@ -17,11 +17,20 @@ jobs:
       - name: Get source branch name
         id: branch_name
         shell: bash
-        run: echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          fi
 
       - name: Debug branch name
         shell: bash
-        run: "echo 'Branch name detected: $BRANCH_NAME'"
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch Name: $BRANCH_NAME"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.ref: ${{ github.ref }}"
 
       - name: Check if merging develop into main
         id: skip_check

@@ -14,7 +14,7 @@ namespace Backend.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Employees",
+                name: "Employee",
                 columns: table => new
                 {
                     EmployeeID = table.Column<string>(type: "varchar(255)", nullable: false)
@@ -30,7 +30,7 @@ namespace Backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Employees", x => x.EmployeeID);
+                    table.PrimaryKey("PK_Employee", x => x.EmployeeID);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
@@ -39,7 +39,7 @@ namespace Backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Employees");
+                name: "Employee");
         }
     }
 }

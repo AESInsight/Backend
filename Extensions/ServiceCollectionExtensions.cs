@@ -11,8 +11,8 @@ namespace Backend.Extensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string not found");
+            var connectionString = Environment.GetEnvironmentVariable("GH_SECRET_CONNECTIONSTRING") 
+                ?? throw new InvalidOperationException("GitHub secret connection string not found");
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {

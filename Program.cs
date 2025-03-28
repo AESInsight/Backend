@@ -6,6 +6,9 @@ using Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add environment variables
+builder.Configuration.AddEnvironmentVariables();
+
 // Configure services
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureSwagger();

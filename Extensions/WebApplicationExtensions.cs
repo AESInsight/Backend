@@ -54,7 +54,7 @@ namespace Backend.Extensions
                 {
                     try
                     {
-                        var employees = await dbContext.Employees.ToListAsync();
+                        var employees = await dbContext.Employee.ToListAsync();
                         return Results.Ok(employees);
                     }
                     catch (Exception ex)
@@ -67,7 +67,7 @@ namespace Backend.Extensions
                 {
                     try
                     {
-                        var employee = await dbContext.Employees.FirstOrDefaultAsync(e => e.EmployeeID == id);
+                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
                         if (employee == null)
                         {
                             return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });

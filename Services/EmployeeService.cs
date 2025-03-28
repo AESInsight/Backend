@@ -18,7 +18,7 @@ public class EmployeeService : IEmployeeService
         try
         {
             // Add all employees to the context
-            await _context.Employees.AddRangeAsync(employees);
+            await _context.Employee.AddRangeAsync(employees);
             
             // Save changes to the database
             await _context.SaveChangesAsync();
