@@ -14,21 +14,30 @@ public class EmployeeService : IEmployeeService
     }
 
     public async Task<List<EmployeeModel>> BulkCreateEmployeesAsync(List<EmployeeModel> employees)
+{
+    try
     {
-        try
-        {
-            // Add all employees to the context
-            await _context.Employee.AddRangeAsync(employees);
-            
-            // Save changes to the database
-            await _context.SaveChangesAsync();
-            
-            return employees;
-        }
-        catch (Exception ex)
-        {
-            // Log the error and rethrow
-            throw new Exception($"Error during bulk employee creation: {ex.Message}", ex);
-        }
+        // Tilføj alle employees til databasen
+        await _context.Employee.AddRangeAsync(employees);
+
+        // Gem ændringerne
+        await _context.SaveChangesAsync();
+
+        return employees;
     }
+    catch (Exception ex)
+    {
+        // Log den indre undtagelse for at få flere detaljer
+        throw new Exception($"Error during bulk employee creation: {ex.InnerException?.Message ?? ex.Message}", ex);
+    }
+}
+public async Task DeleteAllEmployeesAsync()
+{
+    _context.Employee.RemoveRange(_context.Employee);
+    await _context.SaveChangesAsync();
+}
+public async Task<int> GetMaxEmployeeIdAsync()
+{
+    return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
+}
 } 

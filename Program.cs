@@ -13,9 +13,14 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.ConfigureDatabase(builder.Configuration);
 builder.Services.ConfigureSwagger();
 builder.Services.ConfigureCors();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 
 var app = builder.Build();
 
@@ -23,6 +28,9 @@ var app = builder.Build();
 app.UseSwaggerIfDevelopment();
 app.UseHttpsRedirection();
 app.UseCorsPolicy();
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllers();
 
 // Configure routing and endpoints
 app.UseRoutingAndEndpoints();

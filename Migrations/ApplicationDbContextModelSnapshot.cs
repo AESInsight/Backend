@@ -18,6 +18,27 @@ namespace Backend.Migrations
                 .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Backend.Models.CompanyModel", b =>
+                {
+                    b.Property<int>("CompanyID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("CVR")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("CompanyID");
+
+                    b.ToTable("Company", (string)null);
+                });
+
             modelBuilder.Entity("Backend.Models.EmployeeModel", b =>
                 {
                     b.Property<string>("EmployeeID")

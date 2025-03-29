@@ -64,21 +64,29 @@ namespace Backend.Extensions
                 });
 
                 endpoints.MapGet("/api/employees/{id}", async (string id, ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
-                        if (employee == null)
-                        {
-                            return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
-                        }
-                        return Results.Ok(employee);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
-                    }
-                });
+{
+    try
+    {
+        // Konverter id fra string til int
+        if (!int.TryParse(id, out int employeeId))
+        {
+            return Results.BadRequest(new { Status = "Error", Message = "Invalid ID format. ID must be an integer." });
+        }
+
+        // Hent employee baseret på ID
+        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == employeeId);
+        if (employee == null)
+        {
+            return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
+        }
+
+        return Results.Ok(employee);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
+    }
+});
             });
 
             return app;
