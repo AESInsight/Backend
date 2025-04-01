@@ -13,14 +13,15 @@ namespace Backend.Extensions
         public static IApplicationBuilder UseSwaggerIfDevelopment(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
-            // Removed the check for Development environment
-                app.UseSwagger();
-                app.UseSwaggerUI();
+            // Enable Swagger and Swagger UI
+            app.UseSwagger();
+            app.UseSwaggerUI();
             return app;
         }
 
         public static IApplicationBuilder UseCorsPolicy(this IApplicationBuilder app)
         {
+            // Apply CORS policy named "AllowFrontend"
             app.UseCors("AllowFrontend");
             return app;
         }
@@ -30,6 +31,7 @@ namespace Backend.Extensions
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                // Endpoint to test database connection
                 endpoints.MapGet("/api/database/test", async (ApplicationDbContext dbContext) =>
                 {
                     try
@@ -50,6 +52,7 @@ namespace Backend.Extensions
                     }
                 });
 
+                // Endpoint to retrieve all employees
                 endpoints.MapGet("/api/employees", async (ApplicationDbContext dbContext) =>
                 {
                     try
@@ -63,15 +66,24 @@ namespace Backend.Extensions
                     }
                 });
 
+                // Endpoint to retrieve an employee by ID
                 endpoints.MapGet("/api/employees/{id}", async (string id, ApplicationDbContext dbContext) =>
                 {
                     try
                     {
-                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
+                        // Convert id from string to int
+                        if (!int.TryParse(id, out int employeeId))
+                        {
+                            return Results.BadRequest(new { Status = "Error", Message = "Invalid ID format. ID must be an integer." });
+                        }
+
+                        // Retrieve employee based on ID
+                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == employeeId);
                         if (employee == null)
                         {
                             return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
                         }
+
                         return Results.Ok(employee);
                     }
                     catch (Exception ex)
@@ -84,4 +96,4 @@ namespace Backend.Extensions
             return app;
         }
     }
-} 
+}
