@@ -51,46 +51,6 @@ namespace Backend.Extensions
                         return Results.BadRequest(new { Status = "Error", Message = $"Connection test failed: {ex.Message}" });
                     }
                 });
-
-                // Endpoint to retrieve all employees
-                endpoints.MapGet("/api/employees", async (ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        var employees = await dbContext.Employee.ToListAsync();
-                        return Results.Ok(employees);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
-                    }
-                });
-
-                // Endpoint to retrieve an employee by ID
-                endpoints.MapGet("/api/employees/{id}", async (string id, ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        // Convert id from string to int
-                        if (!int.TryParse(id, out int employeeId))
-                        {
-                            return Results.BadRequest(new { Status = "Error", Message = "Invalid ID format. ID must be an integer." });
-                        }
-
-                        // Retrieve employee based on ID
-                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == employeeId);
-                        if (employee == null)
-                        {
-                            return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
-                        }
-
-                        return Results.Ok(employee);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
-                    }
-                });
             });
 
             return app;
