@@ -29,12 +29,6 @@ public class CompanyService : ICompanyService
         return company;
     }
 
-    public async Task CreateCompanyAsync(CompanyModel company)
-    {
-        await _dbContext.Companies.AddAsync(company);
-        await _dbContext.SaveChangesAsync();
-    }
-
     public async Task UpdateCompanyAsync(CompanyModel company)
     {
         // Retrieve the existing company from the database
@@ -63,30 +57,17 @@ public class CompanyService : ICompanyService
         }
     }
 
-    public async Task BulkCreateCompaniesAsync(List<CompanyModel> companies)
+    public async Task DeleteAllCompaniesAsync()
     {
-        await _dbContext.Companies.AddRangeAsync(companies);
+        var companies = await _dbContext.Companies.ToListAsync();
+        _dbContext.Companies.RemoveRange(companies);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task InsertCompanyAsync(int companyId, string companyName, string cvr)
+    public async Task CreateCompaniesAsync(List<CompanyModel> companies)
     {
-        var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR) VALUES (@CompanyID, @CompanyName, @CVR)";
-        await _dbContext.Database.ExecuteSqlRawAsync(sql, 
-            new[] 
-            {
-                new Microsoft.Data.SqlClient.SqlParameter("@CompanyID", companyId),
-                new Microsoft.Data.SqlClient.SqlParameter("@CompanyName", companyName),
-                new Microsoft.Data.SqlClient.SqlParameter("@CVR", cvr)
-            });
-    }
-
-    public async Task BulkInsertCompaniesAsync(List<CompanyModel> companies)
-    {
-        foreach (var company in companies)
-        {
-            await InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR);
-        }
+        await _dbContext.Companies.AddRangeAsync(companies);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task GenerateSampleCompaniesAsync()

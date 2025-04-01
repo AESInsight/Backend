@@ -44,7 +44,7 @@ public class CompanyController : ControllerBase
             return BadRequest(new { message = "No companies provided" });
         }
 
-        await _companyService.BulkInsertCompaniesAsync(companies);
+        await _companyService.CreateCompaniesAsync(companies);
         return Ok(new { message = "Companies inserted successfully", count = companies.Count });
     }
 
@@ -94,6 +94,20 @@ public class CompanyController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while generating sample companies", details = ex.Message });
+        }
+    }
+
+    [HttpDelete("delete-all")]
+    public async Task<IActionResult> DeleteAllCompanies()
+    {
+        try
+        {
+            await _companyService.DeleteAllCompaniesAsync();
+            return Ok(new { message = "All companies deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while deleting all companies", details = ex.Message });
         }
     }
 }
