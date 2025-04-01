@@ -48,6 +48,27 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpGet("company/{companyId}")]
+    public async Task<IActionResult> GetEmployeesByCompanyId(int companyId)
+    {
+        try
+        {
+            var employees = await _employeeService.GetAllEmployeesAsync();
+            var filteredEmployees = employees.Where(e => e.CompanyID == companyId).ToList();
+
+            if (!filteredEmployees.Any())
+            {
+                return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
+            }
+
+            return Ok(filteredEmployees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+        }
+    }
+
     [HttpPost("add")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
