@@ -16,6 +16,38 @@ public class EmployeeController : ControllerBase
         _employeeService = employeeService;
     }
 
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllEmployees()
+    {
+        try
+        {
+            var employees = await _employeeService.GetAllEmployeesAsync();
+            return Ok(employees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetEmployeeById(int id)
+    {
+        try
+        {
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
+            return Ok(employee);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving the employee", details = ex.Message });
+        }
+    }
+
     [HttpPost("manual-upload")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
