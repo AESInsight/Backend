@@ -4,7 +4,7 @@ namespace Backend.Models;
 
 public class CompanyModel
 {
-    [Key] // Mark CompanyID as the primary key
+    [Key] 
     public int CompanyID { get; set; } // Unique ID for the company
 
     public required string CompanyName { get; set; } // Required field for the company name

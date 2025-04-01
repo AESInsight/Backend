@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/AESInsight/Backend/compare/v1.0.0...v1.1.0) (2025-04-01)
+
+
+### Features
+
+* Adds JFToken ([a84f0f7](https://github.com/AESInsight/Backend/commit/a84f0f79f3f71415c38ae1144b66d8c43b5079c0))
+
 # 1.0.0 (2025-03-14)
 
 

@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
     // DbSet for CompanyModel
     public DbSet<CompanyModel> Companies { get; set; }
 
+    public DbSet<User> Users { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -35,5 +37,22 @@ public class ApplicationDbContext : DbContext
                   .IsRequired()
                   .HasMaxLength(8); // CVR must be exactly 8 characters
         });
+        // Seed Users
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    UserId = 1,
+                    Username = "admin",
+                    Password = "$2a$11$K7tih2DcSVCdM9LTf5lmne41uEffe6LXZHT7AmV4mGc4/vbB1NIiG", // Hashed password
+                    Role = "Admin"
+                },
+                new User
+                {
+                    UserId = 2,
+                    Username = "user",
+                    Password = "$2a$11$ymlFcuiFXHLSXD3yEvFp5uFrvkf8FIT6wn/nQYDYgb7B.O0T4oTYS", // Hashed password
+                    Role = "User"
+                }
+            );
     }
 }
