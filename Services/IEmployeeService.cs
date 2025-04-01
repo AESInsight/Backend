@@ -7,6 +7,7 @@ public interface IEmployeeService
     Task<List<EmployeeModel>> GetAllEmployeesAsync();
     Task<EmployeeModel> GetEmployeeByIdAsync(int id);
     Task<EmployeeModel> UpdateEmployeeAsync(int id, EmployeeModel employee);
+    Task<EmployeeModel> DeleteEmployeeAsync(int id);
     Task<List<EmployeeModel>> BulkCreateEmployeesAsync(List<EmployeeModel> employees);
     Task DeleteAllEmployeesAsync(); 
     Task <int> GetMaxEmployeeIdAsync();

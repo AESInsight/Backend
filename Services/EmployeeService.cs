@@ -84,4 +84,18 @@ public class EmployeeService : IEmployeeService
 
         return existingEmployee;
     }
+        public Task<EmployeeModel> DeleteEmployeeAsync(int id)
+    {
+        var employee = _context.Employee.Find(id);
+        if (employee != null)
+        {
+            _context.Employee.Remove(employee);
+            _context.SaveChangesAsync();
+        }
+        if (employee == null)
+        {
+            throw new KeyNotFoundException($"Employee with ID {id} not found.");
+        }
+        return Task.FromResult(employee);
+    }
 }

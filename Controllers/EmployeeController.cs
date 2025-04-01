@@ -159,6 +159,36 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteEmployee(int id)
+    {
+        try
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Invalid employee ID");
+            }
+
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
+            if (employee == null)
+            {
+                return NotFound(new { error = $"Employee with ID {id} not found" });
+            }
+
+            // Call the correct method to delete the employee by ID
+            await _employeeService.DeleteEmployeeAsync(id);
+
+            return Ok(new { message = "Employee deleted successfully" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while deleting the employee", details = ex.Message });
+        }
+    }
 
     [HttpPost("generate-sample-data")]
     public async Task<IActionResult> GenerateSampleData()
