@@ -37,15 +37,15 @@ public class CompanyController : ControllerBase
 
     // POST: api/company
     [HttpPost]
-    public async Task<IActionResult> CreateCompany([FromBody] CompanyModel company)
+    public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyModel> companies)
     {
-        if (company == null || string.IsNullOrEmpty(company.CompanyName) || string.IsNullOrEmpty(company.CVR))
+        if (companies == null || !companies.Any())
         {
-            return BadRequest(new { message = "Invalid company data" });
+            return BadRequest(new { message = "No companies provided" });
         }
 
-        await _companyService.CreateCompanyAsync(company);
-        return CreatedAtAction(nameof(GetCompanyById), new { id = company.CompanyID }, company);
+        await _companyService.BulkInsertCompaniesAsync(companies);
+        return Ok(new { message = "Companies inserted successfully", count = companies.Count });
     }
 
     // PUT: api/company/{id}
@@ -95,31 +95,5 @@ public class CompanyController : ControllerBase
         {
             return StatusCode(500, new { error = "An error occurred while generating sample companies", details = ex.Message });
         }
-    }
-
-    // POST: api/company/insert-company
-    [HttpPost("insert-company")]
-    public async Task<IActionResult> InsertCompany([FromBody] CompanyModel company)
-    {
-        if (company == null || string.IsNullOrEmpty(company.CompanyName) || string.IsNullOrEmpty(company.CVR))
-        {
-            return BadRequest(new { message = "Invalid company data" });
-        }
-
-        await _companyService.InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR);
-        return Ok(new { message = "Company inserted successfully" });
-    }
-
-    // POST: api/company/bulk-insert-companies
-    [HttpPost("bulk-insert-companies")]
-    public async Task<IActionResult> BulkInsertCompanies([FromBody] List<CompanyModel> companies)
-    {
-        if (companies == null || !companies.Any())
-        {
-            return BadRequest(new { message = "No companies provided" });
-        }
-
-        await _companyService.BulkInsertCompaniesAsync(companies);
-        return Ok(new { message = "Companies inserted successfully", count = companies.Count });
     }
 }
