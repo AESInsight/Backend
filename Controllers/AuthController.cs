@@ -20,16 +20,15 @@ namespace Backend.Controllers
         [HttpPost("login")]
 public IActionResult Login([FromBody] LoginRequest request)
 {
-    // Dummy brugerautentifikation (udskift med din egen logik)
     if (request.Username == "admin" && request.Password == "password")
     {
-        var token = GenerateJwtToken(request.Username, "Admin"); // Tilføj rollen her
+        var token = GenerateJwtToken(request.Username, "Admin");
         return Ok(new { Token = token });
     }
 
     if (request.Username == "user" && request.Password == "password")
     {
-        var token = GenerateJwtToken(request.Username, "User"); // Tilføj rollen her
+        var token = GenerateJwtToken(request.Username, "User");
         return Ok(new { Token = token });
     }
 
@@ -45,7 +44,7 @@ public IActionResult Login([FromBody] LoginRequest request)
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(ClaimTypes.Role, role), // Tilføj rollen som claim
+                new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
         
