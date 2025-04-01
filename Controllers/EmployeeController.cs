@@ -102,6 +102,43 @@ public class EmployeeController : ControllerBase
         }
     }
 
+    [HttpPut("update/{id}")]
+    public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeeModel updatedEmployee)
+    {
+        try
+        {
+            if (updatedEmployee == null || id <= 0)
+            {
+                return BadRequest("Invalid employee data or ID");
+            }
+
+            if (updatedEmployee.CompanyID <= 0 || string.IsNullOrEmpty(updatedEmployee.JobTitle) || string.IsNullOrEmpty(updatedEmployee.Gender))
+            {
+                return BadRequest("Invalid employee data: Missing required fields or invalid CompanyID");
+            }
+
+            if (updatedEmployee.Salary < 0 || updatedEmployee.Experience < 0)
+            {
+                return BadRequest("Invalid employee data: Invalid salary or experience values");
+            }
+
+            updatedEmployee.EmployeeID = id;
+
+            var result = await _employeeService.UpdateEmployeeAsync(id, updatedEmployee);
+
+            return Ok(new { message = "Employee updated successfully", employee = result });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while updating the employee", details = ex.Message });
+        }
+    }
+
+
     [HttpPost("generate-sample-data")]
     public async Task<IActionResult> GenerateSampleData()
     {

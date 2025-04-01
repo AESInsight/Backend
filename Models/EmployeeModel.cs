@@ -6,7 +6,7 @@ namespace Backend.Models;
 public class EmployeeModel
 {
     [Key] // Mark EmployeeID as the primary key
-    public int EmployeeID { get; set; } // Primary key for EmployeeModel
+    public int EmployeeID { get; set; } // Primar key for EmployeeModel
 
     public string JobTitle { get; set; } // Job title of the employee
 
