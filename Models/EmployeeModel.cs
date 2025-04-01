@@ -8,13 +8,13 @@ public class EmployeeModel
     [Key] // Mark EmployeeID as the primary key
     public int EmployeeID { get; set; } // Primar key for EmployeeModel
 
-    public string JobTitle { get; set; } // Job title of the employee
+    public string? JobTitle { get; set; } // Job title of the employee
 
     public double Salary { get; set; } // Salary of the employee
 
     public int Experience { get; set; } // Years of experience of the employee
 
-    public string Gender { get; set; } // Gender of the employee
+    public string? Gender { get; set; } // Gender of the employee
 
     public int CompanyID { get; set; } // Foreign key referencing the company
 }
