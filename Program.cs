@@ -10,11 +10,13 @@ using Microsoft.OpenApi.Models; // For OpenApiInfo, OpenApiSecurityScheme, etc.
 
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT-konfiguration
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 // Add environment variables
 builder.Configuration.AddEnvironmentVariables();
+
+// JWT-konfiguration
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
 // Configure services
 builder.Services.ConfigureDatabase(builder.Configuration); // Configure the database connection
@@ -71,14 +73,13 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
+        ValidIssuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured"),
+        ValidAudience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured"),
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
 
 builder.Services.AddAuthorization();
-
 
 var app = builder.Build();
 
