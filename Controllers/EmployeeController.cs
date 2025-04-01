@@ -16,7 +16,7 @@ public class EmployeeController : ControllerBase
         _employeeService = employeeService;
     }
 
-    [HttpPost("bulk-upload")]
+    [HttpPost("manual-upload")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
         try
