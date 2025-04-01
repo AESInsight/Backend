@@ -32,7 +32,7 @@ public class CompanyService : ICompanyService
 
     public async Task UpdateCompanyAsync(CompanyModel company)
     {
-        // Hent den eksisterende virksomhed fra databasen
+        // Retrieve the existing company from the database
         var existingCompany = await _dbContext.Companies.FirstOrDefaultAsync(c => c.CompanyID == company.CompanyID);
 
         if (existingCompany == null)
@@ -40,11 +40,11 @@ public class CompanyService : ICompanyService
             throw new Exception($"Company with ID {company.CompanyID} not found.");
         }
 
-        // Opdater værdierne på den eksisterende virksomhed
+        // Update the values of the existing company
         existingCompany.CompanyName = company.CompanyName;
         existingCompany.CVR = company.CVR;
 
-        // Gem ændringerne
+        // Save the changes
         await _dbContext.SaveChangesAsync();
     }
 
@@ -89,18 +89,18 @@ public class CompanyService : ICompanyService
         var random = new Random();
         var sampleCompanies = new List<CompanyModel>();
 
-        // Generer 10 tilfældige virksomheder
+        // Generate 10 random companies
         for (int i = 1; i <= 3; i++)
         {
             sampleCompanies.Add(new CompanyModel
             {
-                CompanyID = i, // 1, 2, 3, osv.
+                CompanyID = i, // 1, 2, 3, etc.
                 CompanyName = $"Company {i}",
-                CVR = random.Next(10000000, 99999999).ToString() // Tilfældig 8-cifret CVR-nummer
+                CVR = random.Next(10000000, 99999999).ToString() // Random 8-digit CVR number
             });
         }
 
-        // Indsæt data i databasen
+        // Insert data into the database
         foreach (var company in sampleCompanies)
         {
             var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR) VALUES (@CompanyID, @CompanyName, @CVR)";

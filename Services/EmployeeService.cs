@@ -14,30 +14,36 @@ public class EmployeeService : IEmployeeService
     }
 
     public async Task<List<EmployeeModel>> BulkCreateEmployeesAsync(List<EmployeeModel> employees)
-{
-    try
     {
-        // Tilføj alle employees til databasen
-        await _context.Employee.AddRangeAsync(employees);
+        try
+        {
+            // Add all employees to the database
+            await _context.Employee.AddRangeAsync(employees);
 
-        // Gem ændringerne
+            // Save the changes
+            await _context.SaveChangesAsync();
+
+            return employees;
+        }
+        catch (Exception ex)
+        {
+            // Log the inner exception for more details
+            throw new Exception($"Error during bulk employee creation: {ex.InnerException?.Message ?? ex.Message}", ex);
+        }
+    }
+
+    public async Task DeleteAllEmployeesAsync()
+    {
+        // Remove all employees from the database
+        _context.Employee.RemoveRange(_context.Employee);
+
+        // Save the changes
         await _context.SaveChangesAsync();
+    }
 
-        return employees;
-    }
-    catch (Exception ex)
+    public async Task<int> GetMaxEmployeeIdAsync()
     {
-        // Log den indre undtagelse for at få flere detaljer
-        throw new Exception($"Error during bulk employee creation: {ex.InnerException?.Message ?? ex.Message}", ex);
+        // Get the highest EmployeeID in the database, or return 0 if the table is empty
+        return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
     }
 }
-public async Task DeleteAllEmployeesAsync()
-{
-    _context.Employee.RemoveRange(_context.Employee);
-    await _context.SaveChangesAsync();
-}
-public async Task<int> GetMaxEmployeeIdAsync()
-{
-    return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
-}
-} 

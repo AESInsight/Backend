@@ -11,13 +11,13 @@ namespace Backend.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Fjern koden, der opretter tabellerne, da de allerede eksisterer
+            // Remove the code that creates the tables, as they already exist
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Fjern koden, der sletter tabellerne, da vi ikke ønsker at slette dem
+            // Remove the code that deletes the tables, as we do not want to delete them
         }
     }
 }

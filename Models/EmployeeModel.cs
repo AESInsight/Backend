@@ -5,11 +5,16 @@ namespace Backend.Models;
 
 public class EmployeeModel
 {
-    [Key] // Markerer EmployeeID som primærnøgle
-    public int EmployeeID { get; set; } //Primary key for EmployeeModel
-    public string JobTitle { get; set; }
-    public double Salary { get; set; }
-    public int Experience { get; set; }
-    public string Gender { get; set; }
-    public int CompanyID { get; set; }
+    [Key] // Mark EmployeeID as the primary key
+    public int EmployeeID { get; set; } // Primary key for EmployeeModel
+
+    public string JobTitle { get; set; } // Job title of the employee
+
+    public double Salary { get; set; } // Salary of the employee
+
+    public int Experience { get; set; } // Years of experience of the employee
+
+    public string Gender { get; set; } // Gender of the employee
+
+    public int CompanyID { get; set; } // Foreign key referencing the company
 }

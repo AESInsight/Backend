@@ -4,13 +4,13 @@ namespace Backend.Services;
 
 public interface ICompanyService
 {
-    Task<List<CompanyModel>> GetAllCompaniesAsync(); // Hent alle virksomheder
-    Task<CompanyModel> GetCompanyByIdAsync(int id); // Hent en virksomhed baseret på ID
-    Task CreateCompanyAsync(CompanyModel company); // Opret en ny virksomhed
-    Task UpdateCompanyAsync(CompanyModel company); // Opdater en eksisterende virksomhed
-    Task DeleteCompanyAsync(int id); // Slet en virksomhed baseret på ID
-    Task BulkCreateCompaniesAsync(List<CompanyModel> companies); // Batch-opret virksomheder
-    Task InsertCompanyAsync(int companyId, string companyName, string cvr); // Tilføj denne
-    Task BulkInsertCompaniesAsync(List<CompanyModel> companies); // Tilføj denne
-    Task GenerateSampleCompaniesAsync(); // Tilføj denne
+    Task<List<CompanyModel>> GetAllCompaniesAsync(); // Retrieve all companies
+    Task<CompanyModel> GetCompanyByIdAsync(int id); // Retrieve a company by ID
+    Task CreateCompanyAsync(CompanyModel company); // Create a new company
+    Task UpdateCompanyAsync(CompanyModel company); // Update an existing company
+    Task DeleteCompanyAsync(int id); // Delete a company by ID
+    Task BulkCreateCompaniesAsync(List<CompanyModel> companies); // Batch-create companies
+    Task InsertCompanyAsync(int companyId, string companyName, string cvr); // Insert a single company
+    Task BulkInsertCompaniesAsync(List<CompanyModel> companies); // Batch-insert companies
+    Task GenerateSampleCompaniesAsync(); // Generate sample companies
 }

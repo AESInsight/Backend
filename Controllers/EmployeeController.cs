@@ -16,61 +16,61 @@ public class EmployeeController : ControllerBase
         _employeeService = employeeService;
     }
 
-[HttpPost("bulk-upload")]
-public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
-{
-    try
+    [HttpPost("bulk-upload")]
+    public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
-        if (employees == null || !employees.Any())
+        try
         {
-            return BadRequest("No employees provided");
+            if (employees == null || !employees.Any())
+            {
+                return BadRequest("No employees provided");
+            }
+
+            // Find the highest existing EmployeeID
+            var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
+
+            // Generate unique EmployeeIDs for the new employees
+            int currentId = maxEmployeeId + 1;
+            foreach (var employee in employees)
+            {
+                if (employee.CompanyID <= 0)
+                {
+                    return BadRequest($"Invalid employee data: CompanyID {employee.CompanyID} is invalid");
+                }
+
+                if (string.IsNullOrEmpty(employee.JobTitle) || string.IsNullOrEmpty(employee.Gender))
+                {
+                    return BadRequest($"Invalid employee data: Missing required fields");
+                }
+
+                if (employee.Salary < 0 || employee.Experience < 0)
+                {
+                    return BadRequest($"Invalid employee data: Invalid salary or experience values");
+                }
+
+                // Assign a new EmployeeID if it is not provided
+                if (employee.EmployeeID <= 0)
+                {
+                    employee.EmployeeID = currentId++;
+                }
+            }
+
+            // Process the bulk upload
+            var result = await _employeeService.BulkCreateEmployeesAsync(employees);
+
+            return Ok(new
+            {
+                message = $"Successfully processed {result.Count} employees",
+                processedCount = result.Count
+            });
         }
-
-        // Find det højeste eksisterende EmployeeID
-        var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
-
-        // Generer unikke EmployeeID'er for de nye employees
-        int currentId = maxEmployeeId + 1;
-        foreach (var employee in employees)
+        catch (Exception ex)
         {
-            if (employee.CompanyID <= 0)
-            {
-                return BadRequest($"Invalid employee data: CompanyID {employee.CompanyID} is invalid");
-            }
-
-            if (string.IsNullOrEmpty(employee.JobTitle) || string.IsNullOrEmpty(employee.Gender))
-            {
-                return BadRequest($"Invalid employee data: Missing required fields");
-            }
-
-            if (employee.Salary < 0 || employee.Experience < 0)
-            {
-                return BadRequest($"Invalid employee data: Invalid salary or experience values");
-            }
-
-            // Tildel et nyt EmployeeID, hvis det ikke er angivet
-            if (employee.EmployeeID <= 0)
-            {
-                employee.EmployeeID = currentId++;
-            }
+            return StatusCode(500, new { error = "An error occurred while processing the bulk upload", details = ex.Message });
         }
-
-        // Process the bulk upload
-        var result = await _employeeService.BulkCreateEmployeesAsync(employees);
-
-        return Ok(new
-        {
-            message = $"Successfully processed {result.Count} employees",
-            processedCount = result.Count
-        });
     }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { error = "An error occurred while processing the bulk upload", details = ex.Message });
-    }
-}
 
-        [HttpPost("generate-sample-data")]
+    [HttpPost("generate-sample-data")]
     public async Task<IActionResult> GenerateSampleData()
     {
         string GetRandomJobTitle(Random random)
@@ -88,16 +88,16 @@ public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeMod
                 "DevOps Engineer",
                 "UI/UX Designer"
             };
-    
+
             return jobTitles[random.Next(jobTitles.Length)];
         }
-    
+
         try
         {
             var random = new Random();
             var sampleEmployees = new List<EmployeeModel>();
             var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
-    
+
             for (int i = 1; i <= 100; i++)
             {
                 sampleEmployees.Add(new EmployeeModel
@@ -110,9 +110,9 @@ public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeMod
                     CompanyID = random.Next(1, 4)
                 });
             }
-    
+
             await _employeeService.BulkCreateEmployeesAsync(sampleEmployees);
-    
+
             return Ok(new
             {
                 message = "Successfully generated 100 sample employees",
@@ -125,8 +125,7 @@ public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeMod
         }
     }
 
-
-        [HttpDelete("delete-all")]
+    [HttpDelete("delete-all")]
     public async Task<IActionResult> DeleteAllEmployees()
     {
         try

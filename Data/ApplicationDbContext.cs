@@ -20,20 +20,20 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Konfigurer tabelnavne eksplicit
+        // Configure table names explicitly
         modelBuilder.Entity<EmployeeModel>().ToTable("Employee");
         modelBuilder.Entity<CompanyModel>().ToTable("Company");
 
-        // Ekstra konfiguration for CompanyModel
+        // Additional configuration for CompanyModel
         modelBuilder.Entity<CompanyModel>(entity =>
         {
-            entity.HasKey(c => c.CompanyID); // Primærnøgle
+            entity.HasKey(c => c.CompanyID); // Primary key
             entity.Property(c => c.CompanyName)
                   .IsRequired()
-                  .HasMaxLength(255); // Maks. længde for CompanyName
+                  .HasMaxLength(255); // Maximum length for CompanyName
             entity.Property(c => c.CVR)
                   .IsRequired()
-                  .HasMaxLength(8); // CVR skal være præcis 8 tegn
+                  .HasMaxLength(8); // CVR must be exactly 8 characters
         });
     }
 }
