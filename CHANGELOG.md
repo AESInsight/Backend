@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/AESInsight/Backend/compare/v1.2.0...v1.3.0) (2025-04-01)
+
+
+### Features
+
+* Merge pull request [#36](https://github.com/AESInsight/Backend/issues/36) from AESInsight/feat/35/authorize-put-delete-endpoints ([6e3f314](https://github.com/AESInsight/Backend/commit/6e3f314fe2069475a4e1e25fb8b7c19139451bed))
+* Updates put and delete requests to include ASP.NET authorization attribute for "Admin" role. ([c107ee6](https://github.com/AESInsight/Backend/commit/c107ee64d6eb79bc5676d1cb2ecc29caa18961d2))
+
 # [1.2.0](https://github.com/AESInsight/Backend/compare/v1.1.0...v1.2.0) (2025-04-01)
 
 
