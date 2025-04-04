@@ -41,9 +41,61 @@ public class EmployeeService : IEmployeeService
         await _context.SaveChangesAsync();
     }
 
+    public Task<List<EmployeeModel>> GetAllEmployeesAsync()
+    {
+        return _context.Employee.ToListAsync();
+    }
+    
+
+    public async Task<EmployeeModel> GetEmployeeByIdAsync(int id)
+    {
+        var employee = await _context.Employee.FindAsync(id);
+        if (employee == null)
+        {
+            throw new KeyNotFoundException($"Employee with ID {id} was not found.");
+        }
+        return employee;
+    }
+
     public async Task<int> GetMaxEmployeeIdAsync()
     {
         // Get the highest EmployeeID in the database, or return 0 if the table is empty
         return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
+    }
+
+    public async Task<EmployeeModel> UpdateEmployeeAsync(int id, EmployeeModel updatedEmployee)
+    {
+        var existingEmployee = await _context.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+        if (existingEmployee == null)
+        {
+            throw new KeyNotFoundException($"Employee with ID {id} not found.");
+        }
+
+        // Update the fields of the existing employee
+        existingEmployee.JobTitle = updatedEmployee.JobTitle;
+        existingEmployee.Salary = updatedEmployee.Salary;
+        existingEmployee.Experience = updatedEmployee.Experience;
+        existingEmployee.Gender = updatedEmployee.Gender;
+        existingEmployee.CompanyID = updatedEmployee.CompanyID;
+
+        // Save changes to the database
+        await _context.SaveChangesAsync();
+
+        return existingEmployee;
+    }
+        public Task<EmployeeModel> DeleteEmployeeAsync(int id)
+    {
+        var employee = _context.Employee.Find(id);
+        if (employee != null)
+        {
+            _context.Employee.Remove(employee);
+            _context.SaveChangesAsync();
+        }
+        if (employee == null)
+        {
+            throw new KeyNotFoundException($"Employee with ID {id} not found.");
+        }
+        return Task.FromResult(employee);
     }
 }

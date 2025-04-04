@@ -21,7 +21,60 @@ public class EmployeeController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpPost("manual-upload")]
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllEmployees()
+    {
+        try
+        {
+            var employees = await _employeeService.GetAllEmployeesAsync();
+            return Ok(employees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetEmployeeById(int id)
+    {
+        try
+        {
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
+            return Ok(employee);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving the employee", details = ex.Message });
+        }
+    }
+
+    [HttpGet("company/{companyId}")]
+    public async Task<IActionResult> GetEmployeesByCompanyId(int companyId)
+    {
+        try
+        {
+            var employees = await _employeeService.GetAllEmployeesAsync();
+            var filteredEmployees = employees.Where(e => e.CompanyID == companyId).ToList();
+
+            if (!filteredEmployees.Any())
+            {
+                return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
+            }
+
+            return Ok(filteredEmployees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+        }
+    }
+
+    [HttpPost("add")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
@@ -73,6 +126,75 @@ public class EmployeeController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while processing the bulk upload", details = ex.Message });
+        }
+    }
+
+    [HttpPut("update/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeeModel updatedEmployee)
+    {
+        try
+        {
+            if (updatedEmployee == null || id <= 0)
+            {
+                return BadRequest("Invalid employee data or ID");
+            }
+
+            if (updatedEmployee.CompanyID <= 0 || string.IsNullOrEmpty(updatedEmployee.JobTitle) || string.IsNullOrEmpty(updatedEmployee.Gender))
+            {
+                return BadRequest("Invalid employee data: Missing required fields or invalid CompanyID");
+            }
+
+            if (updatedEmployee.Salary < 0 || updatedEmployee.Experience < 0)
+            {
+                return BadRequest("Invalid employee data: Invalid salary or experience values");
+            }
+
+            updatedEmployee.EmployeeID = id;
+
+            var result = await _employeeService.UpdateEmployeeAsync(id, updatedEmployee);
+
+            return Ok(new { message = "Employee updated successfully", employee = result });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while updating the employee", details = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteEmployee(int id)
+    {
+        try
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Invalid employee ID");
+            }
+
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
+            if (employee == null)
+            {
+                return NotFound(new { error = $"Employee with ID {id} not found" });
+            }
+
+            // Call the correct method to delete the employee by ID
+            await _employeeService.DeleteEmployeeAsync(id);
+
+            return Ok(new { message = "Employee deleted successfully" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while deleting the employee", details = ex.Message });
         }
     }
 

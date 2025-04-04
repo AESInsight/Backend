@@ -21,7 +21,12 @@ public class CompanyService : ICompanyService
 
     public async Task<CompanyModel> GetCompanyByIdAsync(int id)
     {
-        return await _dbContext.Companies.FindAsync(id);
+        var company = await _dbContext.Companies.FindAsync(id);
+        if (company == null)
+        {
+            throw new Exception($"Company with ID {id} not found.");
+        }
+        return company;
     }
 
     public async Task CreateCompanyAsync(CompanyModel company)

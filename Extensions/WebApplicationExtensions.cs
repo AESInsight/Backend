@@ -51,6 +51,7 @@ namespace Backend.Extensions
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers(); // Map controller routes
+
             });
             return app;
         }

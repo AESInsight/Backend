@@ -1,3 +1,26 @@
+# [1.3.0](https://github.com/AESInsight/Backend/compare/v1.2.0...v1.3.0) (2025-04-01)
+
+
+### Features
+
+* Merge pull request [#36](https://github.com/AESInsight/Backend/issues/36) from AESInsight/feat/35/authorize-put-delete-endpoints ([6e3f314](https://github.com/AESInsight/Backend/commit/6e3f314fe2069475a4e1e25fb8b7c19139451bed))
+* Updates put and delete requests to include ASP.NET authorization attribute for "Admin" role. ([c107ee6](https://github.com/AESInsight/Backend/commit/c107ee64d6eb79bc5676d1cb2ecc29caa18961d2))
+
+# [1.2.0](https://github.com/AESInsight/Backend/compare/v1.1.0...v1.2.0) (2025-04-01)
+
+
+### Bug Fixes
+
+* removes warnings ([af969f7](https://github.com/AESInsight/Backend/commit/af969f728c74e0e08df58601a781a119b7dfc7c9))
+
+
+### Features
+
+* implements employee/update endpoint ([12ea687](https://github.com/AESInsight/Backend/commit/12ea687ae96f649cc0e2d38d4209dee6645eacf5))
+* Implements endpoint to delete employee by ID. ([fdf7e26](https://github.com/AESInsight/Backend/commit/fdf7e26f565f4a9f28261c35c2e618b62aefb6b4))
+* Implements endpoint to get employees by company ID ([143f0c2](https://github.com/AESInsight/Backend/commit/143f0c20b932df00cae3d74aa7b87e9c10e5bf43))
+* Merge pull request [#33](https://github.com/AESInsight/Backend/issues/33) from AESInsight/feat/25/improve-employee-controller ([096dd24](https://github.com/AESInsight/Backend/commit/096dd24bbc423cb0378e9114b25fa9315bf4b51b))
+
 # [1.1.0](https://github.com/AESInsight/Backend/compare/v1.0.0...v1.1.0) (2025-04-01)
 
 
