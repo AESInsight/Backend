@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Backend.Models;
@@ -17,4 +18,7 @@ public class EmployeeModel
     public string Gender { get; set; } // Gender of the employee
 
     public int CompanyID { get; set; } // Foreign key referencing the company
+
+    [ForeignKey("CompanyID")]
+    public CompanyModel Company { get; set; } // Navigation property for the related Company
 }

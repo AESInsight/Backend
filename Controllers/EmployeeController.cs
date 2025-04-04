@@ -3,6 +3,8 @@ using Backend.Models;
 using Backend.Services;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Backend.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers;
 
@@ -11,10 +13,12 @@ namespace Backend.Controllers;
 public class EmployeeController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
+    private readonly ApplicationDbContext _dbContext;
 
-    public EmployeeController(IEmployeeService employeeService)
+    public EmployeeController(IEmployeeService employeeService, ApplicationDbContext dbContext)
     {
         _employeeService = employeeService;
+        _dbContext = dbContext;
     }
 
     [HttpPost("manual-upload")]
@@ -138,6 +142,30 @@ public class EmployeeController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while deleting employees", details = ex.Message });
+        }
+    }
+
+    [HttpGet("GetAllEmployees")]
+    public async Task<IActionResult> GetAllEmployees()
+    {
+        try
+        {
+            var employees = await _dbContext.Employee
+                .Include(e => e.Company) // Include related Company data if needed
+                    .OrderBy(e => e.EmployeeID) // Sort by EmployeeID in ascending order
+                .ToListAsync();
+
+            if (!employees.Any())
+            {
+                return NotFound(new { Status = "NotFound", Message = "No employees found in the database." });
+            }
+
+            return Ok(employees);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching employees: {ex.Message}");
+            return BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
         }
     }
 }

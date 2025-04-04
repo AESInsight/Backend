@@ -71,6 +71,8 @@ namespace Backend.Migrations
 
                     b.HasKey("EmployeeID");
 
+                    b.HasIndex("CompanyID");
+
                     b.ToTable("Employee", (string)null);
                 });
 
@@ -81,10 +83,6 @@ namespace Backend.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("DummyColumn")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -106,7 +104,6 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-                            DummyColumn = "Temp",
                             Password = "$2a$11$K7tih2DcSVCdM9LTf5lmne41uEffe6LXZHT7AmV4mGc4/vbB1NIiG",
                             Role = "Admin",
                             Username = "admin"
@@ -114,11 +111,21 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 2,
-                            DummyColumn = "Temp",
                             Password = "$2a$11$ymlFcuiFXHLSXD3yEvFp5uFrvkf8FIT6wn/nQYDYgb7B.O0T4oTYS",
                             Role = "User",
                             Username = "user"
                         });
+                });
+
+            modelBuilder.Entity("Backend.Models.EmployeeModel", b =>
+                {
+                    b.HasOne("Backend.Models.CompanyModel", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 #pragma warning restore 612, 618
         }

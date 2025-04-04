@@ -5,11 +5,27 @@ using Backend.Data;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Extensions
 {
     public static class WebApplicationExtensions
     {
+        public static IServiceCollection ConfigureCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", builder =>
+                {
+                    builder.WithOrigins("http://localhost:5174") // Frontend URL
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+            });
+
+            return services;
+        }
+
         public static IApplicationBuilder UseSwaggerIfDevelopment(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
@@ -31,68 +47,8 @@ namespace Backend.Extensions
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                // Endpoint to test database connection
-                endpoints.MapGet("/api/database/test", async (ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        bool canConnect = await dbContext.Database.CanConnectAsync();
-                        if (canConnect)
-                        {
-                            return Results.Ok(new { Status = "Connected", Message = "Successfully connected to the database!" });
-                        }
-                        else
-                        {
-                            return Results.BadRequest(new { Status = "Failed", Message = "Could not connect to the database." });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Connection test failed: {ex.Message}" });
-                    }
-                });
-
-                // Endpoint to retrieve all employees
-                endpoints.MapGet("/api/employees", async (ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        var employees = await dbContext.Employee.ToListAsync();
-                        return Results.Ok(employees);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
-                    }
-                });
-
-                // Endpoint to retrieve an employee by ID
-                endpoints.MapGet("/api/employees/{id}", async (string id, ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        // Convert id from string to int
-                        if (!int.TryParse(id, out int employeeId))
-                        {
-                            return Results.BadRequest(new { Status = "Error", Message = "Invalid ID format. ID must be an integer." });
-                        }
-
-                        // Retrieve employee based on ID
-                        var employee = await dbContext.Employee.FirstOrDefaultAsync(e => e.EmployeeID == employeeId);
-                        if (employee == null)
-                        {
-                            return Results.NotFound(new { Status = "NotFound", Message = $"Employee with ID {id} not found." });
-                        }
-
-                        return Results.Ok(employee);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
-                    }
-                });
+                endpoints.MapControllers(); // Map controller routes
             });
-
             return app;
         }
     }
