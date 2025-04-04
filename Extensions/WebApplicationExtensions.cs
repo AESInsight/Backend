@@ -17,9 +17,12 @@ namespace Backend.Extensions
             {
                 options.AddPolicy("AllowFrontend", builder =>
                 {
-                    builder.WithOrigins("http://localhost:5174") // Frontend URL
-                           .AllowAnyHeader()
-                           .AllowAnyMethod();
+                    builder.WithOrigins(
+                            "http://localhost:5174", // Frontend URL for local development
+                            "https://aes-Indsigt.dk" // Production website
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
 
