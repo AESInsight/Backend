@@ -21,7 +21,7 @@ var key = Encoding.UTF8.GetBytes(jwtKey);
 // Configure services
 builder.Services.ConfigureDatabase(builder.Configuration); // Configure the database connection
 builder.Services.ConfigureSwagger(); // Configure Swagger for API documentation
-builder.Services.ConfigureCors(); // Configure CORS policy
+Backend.Extensions.WebApplicationExtensions.ConfigureCors(builder.Services); // Explicitly use the custom ConfigureCors method
 builder.Services.AddControllers(); // Add support for controllers
 builder.Services.AddEndpointsApiExplorer(); // Add support for endpoint exploration
 builder.Services.AddSwaggerGen(); // Add Swagger generation
@@ -82,6 +82,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+app.Urls.Add("http://localhost:5170"); // Ensure the backend listens on the correct host and port
 
 // Configure middleware
 app.UseSwaggerIfDevelopment(); // Enable Swagger in development environment
@@ -90,9 +91,6 @@ app.UseCorsPolicy(); // Apply the configured CORS policy
 app.UseRouting(); // Enable routing
 app.UseAuthorization(); // Enable authorization
 app.MapControllers(); // Map controller routes
-
-// Configure routing and endpoints
-app.UseRoutingAndEndpoints(); // Add custom routing and endpoints
 
 // Apply migrations and seed the database
 using (var scope = app.Services.CreateScope())

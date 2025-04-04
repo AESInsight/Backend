@@ -5,11 +5,30 @@ using Backend.Data;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Extensions
 {
     public static class WebApplicationExtensions
     {
+        public static IServiceCollection ConfigureCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", builder =>
+                {
+                    builder.WithOrigins(
+                            "http://localhost:5174", // Frontend URL for local development
+                            "https://aes-Insight.dk" // Production website
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
+            return services;
+        }
+
         public static IApplicationBuilder UseSwaggerIfDevelopment(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
@@ -31,28 +50,9 @@ namespace Backend.Extensions
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                // Endpoint to test database connection
-                endpoints.MapGet("/api/database/test", async (ApplicationDbContext dbContext) =>
-                {
-                    try
-                    {
-                        bool canConnect = await dbContext.Database.CanConnectAsync();
-                        if (canConnect)
-                        {
-                            return Results.Ok(new { Status = "Connected", Message = "Successfully connected to the database!" });
-                        }
-                        else
-                        {
-                            return Results.BadRequest(new { Status = "Failed", Message = "Could not connect to the database." });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return Results.BadRequest(new { Status = "Error", Message = $"Connection test failed: {ex.Message}" });
-                    }
-                });
-            });
+                endpoints.MapControllers(); // Map controller routes
 
+            });
             return app;
         }
     }
