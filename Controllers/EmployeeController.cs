@@ -21,19 +21,6 @@ public class EmployeeController : ControllerBase
         _dbContext = dbContext;
     }
 
-    [HttpGet("all")]
-    public async Task<IActionResult> GetAllEmployees()
-    {
-        try
-        {
-            var employees = await _employeeService.GetAllEmployeesAsync();
-            return Ok(employees);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
-        }
-    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetEmployeeById(int id)
