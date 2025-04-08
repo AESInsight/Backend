@@ -101,12 +101,12 @@ public class CompanyController : ControllerBase
     [HttpPost("insert-company")]
     public async Task<IActionResult> InsertCompany([FromBody] CompanyModel company)
     {
-        if (company == null || string.IsNullOrEmpty(company.CompanyName) || string.IsNullOrEmpty(company.CVR) || string.IsNullOrEmpty(company.Email) || string.IsNullOrEmpty(company.PasswordHash) || string.IsNullOrEmpty(company.EmailPassword))
+        if (company == null || string.IsNullOrEmpty(company.CompanyName) || string.IsNullOrEmpty(company.CVR) || string.IsNullOrEmpty(company.Email) || string.IsNullOrEmpty(company.PasswordHash))
         {
             return BadRequest(new { message = "Invalid company data" });
         }
 
-        await _companyService.InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR, company.Email, company.PasswordHash, company.EmailPassword);
+        await _companyService.InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR, company.Email, company.PasswordHash);
         return Ok(new { message = "Company inserted successfully" });
     }
 

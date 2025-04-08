@@ -30,30 +30,40 @@ public class EmailService : IEmailService
             return;
         }
 
-        if (string.IsNullOrEmpty(company.EmailPassword))
-        {
-            _logger.LogWarning($"Email password not set for company {company.CompanyName}");
-            return;
-        }
-
         var smtpSettings = _configuration.GetSection("SmtpSettings");
         var smtpServer = smtpSettings["Server"];
         var smtpPort = 587;
         
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(company.CompanyName, company.Email));
-        message.To.Add(new MailboxAddress("", email));
-        message.Subject = "Password Reset Request";
+        // Use our fixed one.com email for sending
+        message.From.Add(new MailboxAddress("AES Insight", "cff@aes-insight.dk"));
+        // Send to the company's email
+        message.To.Add(new MailboxAddress(company.CompanyName, company.Email));
+        message.Subject = "Password Reset Request for AES Insight";
 
-        var resetLink = $"https://aes-insight.dk/reset-password?token={resetToken}&email={email}";
         var bodyBuilder = new BodyBuilder
         {
             HtmlBody = $@"
                 <h2>Password Reset Request</h2>
-                <p>You have requested to reset your password. Click the link below to proceed:</p>
-                <p><a href='{resetLink}'>Reset Password</a></p>
+                <p>Hello {company.CompanyName},</p>
+                <p>You have requested to reset your password for your AES Insight account.</p>
+                <p>To reset your password, please follow these steps:</p>
+                <ol>
+                    <li>Go to <a href='http://localhost:5170/swagger'>Swagger UI</a></li>
+                    <li>Find the POST /api/PasswordReset/reset endpoint</li>
+                    <li>Click 'Try it out'</li>
+                    <li>Enter the following information:
+                        <ul>
+                            <li>email: {company.Email}</li>
+                            <li>token: {resetToken}</li>
+                            <li>newPassword: (your new password)</li>
+                        </ul>
+                    </li>
+                    <li>Click 'Execute'</li>
+                </ol>
                 <p>If you didn't request this, please ignore this email.</p>
-                <p>This link will expire in 1 hour.</p>
+                <p>This token will expire in 1 hour.</p>
+                <p>Best regards,<br>AES Insight Team</p>
             "
         };
 
@@ -62,8 +72,8 @@ public class EmailService : IEmailService
         using var client = new SmtpClient();
         await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
         
-        // Use the company's email and email password for authentication
-        await client.AuthenticateAsync(company.Email, company.EmailPassword);
+        // Use our fixed one.com credentials
+        await client.AuthenticateAsync("cff@aes-insight.dk", "#SecurePassword123");
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
     }

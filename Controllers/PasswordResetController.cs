@@ -3,6 +3,7 @@ using Backend.Services;
 using Backend.Models;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.Controllers;
 
@@ -12,11 +13,19 @@ public class PasswordResetController : ControllerBase
 {
     private readonly IEmailService _emailService;
     private readonly ApplicationDbContext _dbContext;
+    private readonly ILogger<PasswordResetController> _logger;
+    private readonly ICompanyService _companyService;
 
-    public PasswordResetController(IEmailService emailService, ApplicationDbContext dbContext)
+    public PasswordResetController(
+        IEmailService emailService, 
+        ApplicationDbContext dbContext, 
+        ILogger<PasswordResetController> logger,
+        ICompanyService companyService)
     {
         _emailService = emailService;
         _dbContext = dbContext;
+        _logger = logger;
+        _companyService = companyService;
     }
 
     [HttpPost("request-reset")]
@@ -45,10 +54,18 @@ public class PasswordResetController : ControllerBase
 
         // In a real implementation, you would verify the token here
         // For now, we'll just update the password
-        company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        company.PasswordHash = newPasswordHash;
         await _dbContext.SaveChangesAsync();
 
         return Ok(new { message = "Password has been reset successfully" });
+    }
+
+    [HttpPost("verify")]
+    public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordRequest request)
+    {
+        var isValid = await _companyService.VerifyPasswordAsync(request.Email, request.Password);
+        return Ok(new { isValid });
     }
 }
 
@@ -62,4 +79,10 @@ public class ResetPasswordRequest
     public string Email { get; set; } = null!;
     public string Token { get; set; } = null!;
     public string NewPassword { get; set; } = null!;
+}
+
+public class VerifyPasswordRequest
+{
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
 } 
