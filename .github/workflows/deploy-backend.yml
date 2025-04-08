@@ -32,4 +32,4 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           port: 22
           source: "publish/*"
-          target: "webroots/api/"  # adjust as needed
+          target: "webroots/e937548c/"
