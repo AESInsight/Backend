@@ -1,3 +1,17 @@
+# [1.4.0](https://github.com/AESInsight/Backend/compare/v1.3.1...v1.4.0) (2025-04-08)
+
+
+### Bug Fixes
+
+* Adds correct error handling for CVR ([11a90c7](https://github.com/AESInsight/Backend/commit/11a90c7e0a6f3e8d31acc04e4da80f293119d57c))
+
+
+### Features
+
+* Consolidates company post requests ([a4de28e](https://github.com/AESInsight/Backend/commit/a4de28eac1b93c99b1ece7014743b17ad63ff7aa))
+* Further consolidates and refactors company controller and service. ([cf4792d](https://github.com/AESInsight/Backend/commit/cf4792dab9924b413f707ec04d756adae2e3604e))
+* Merge pull request [#48](https://github.com/AESInsight/Backend/issues/48) from AESInsight/feat/37/improve-company-controller ([af59bb0](https://github.com/AESInsight/Backend/commit/af59bb0ec92c12915cb3c026b3b8568f46aa2676))
+
 ## [1.3.1](https://github.com/AESInsight/Backend/compare/v1.3.0...v1.3.1) (2025-04-08)
 
 
