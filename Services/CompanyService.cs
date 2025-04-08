@@ -27,29 +27,11 @@ public class CompanyService : ICompanyService
         var company = await _dbContext.Companies.FindAsync(id);
         if (company == null)
         {
-            throw new Exception($"Company with ID {id} not found.");
+            throw new KeyNotFoundException($"Company with ID {id} not found.");
         }
         return company;
     }
-
-    public async Task<CompanyModel> CreateCompanyAsync(CompanyModel company)
-    {
-        try
-        {
-            // Set command timeout to 30 seconds
-            _dbContext.Database.SetCommandTimeout(30);
-            
-            _dbContext.Companies.Add(company);
-            await _dbContext.SaveChangesAsync();
-            return company;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating company");
-            throw;
-        }
-    }
-
+    
     public async Task UpdateCompanyAsync(CompanyModel company)
     {
         // Retrieve the existing company from the database
@@ -57,7 +39,12 @@ public class CompanyService : ICompanyService
 
         if (existingCompany == null)
         {
-            throw new Exception($"Company with ID {company.CompanyID} not found.");
+            throw new KeyNotFoundException($"Company with ID {company.CompanyID} not found.");
+        }
+
+        if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+        {
+            throw new ArgumentException("CVR must be exactly 8 digits.");
         }
 
         // Update the values of the existing company
@@ -85,32 +72,26 @@ public class CompanyService : ICompanyService
         }
     }
 
-    public async Task BulkCreateCompaniesAsync(List<CompanyModel> companies)
+    public async Task DeleteAllCompaniesAsync()
     {
-        await _dbContext.Companies.AddRangeAsync(companies);
+        var companies = await _dbContext.Companies.ToListAsync();
+        _dbContext.Companies.RemoveRange(companies);
         await _dbContext.SaveChangesAsync();
     }
-
-    public async Task InsertCompanyAsync(int companyId, string companyName, string cvr, string email, string passwordHash)
-    {
-        var company = new CompanyModel
-        {
-            CompanyID = companyId,
-            CompanyName = companyName,
-            CVR = cvr,
-            Email = email,
-            PasswordHash = passwordHash
-        };
-
-        await CreateCompanyAsync(company);
-    }
-
-    public async Task BulkInsertCompaniesAsync(List<CompanyModel> companies)
+    
+    public async Task CreateCompaniesAsync(List<CompanyModel> companies)
     {
         foreach (var company in companies)
         {
-            await InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR, company.Email, company.PasswordHash);
+            // Validate CVR
+            if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+            {
+                throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");
+            }
         }
+
+        await _dbContext.Companies.AddRangeAsync(companies);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task GenerateSampleCompaniesAsync()

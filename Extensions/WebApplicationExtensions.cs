@@ -11,25 +11,7 @@ namespace Backend.Extensions
 {
     public static class WebApplicationExtensions
     {
-        public static IServiceCollection ConfigureCors(this IServiceCollection services)
-        {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("AllowFrontend", builder =>
-                {
-                    builder.WithOrigins(
-                            "http://localhost:5174", // Frontend URL for local development
-                            "https://aes-Insight.dk" // Production website
-                        )
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
-            });
-
-            return services;
-        }
-
-        public static IApplicationBuilder UseSwaggerIfDevelopment(this IApplicationBuilder app)
+        public static IApplicationBuilder UseSwaggerDevelop(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
             // Enable Swagger and Swagger UI
@@ -40,7 +22,6 @@ namespace Backend.Extensions
 
         public static IApplicationBuilder UseCorsPolicy(this IApplicationBuilder app)
         {
-            // Apply CORS policy named "AllowFrontend"
             app.UseCors("AllowFrontend");
             return app;
         }
@@ -50,8 +31,7 @@ namespace Backend.Extensions
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers(); // Map controller routes
-
+                endpoints.MapControllers();
             });
             return app;
         }

@@ -28,7 +28,7 @@ public class EmployeeService : IEmployeeService
         catch (Exception ex)
         {
             // Log the inner exception for more details
-            throw new Exception($"Error during bulk employee creation: {ex.InnerException?.Message ?? ex.Message}", ex);
+            throw new Exception($"Error during employee creation: {ex.InnerException?.Message ?? ex.Message}", ex);
         }
     }
 
