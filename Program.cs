@@ -83,7 +83,7 @@ var app = builder.Build();
 app.Urls.Add("http://localhost:5170"); // Ensure the backend listens on the correct host and port
 
 // Configure middleware
-app.UseSwagger(); // Enable Swagger in development environment
+app.UseSwaggerDevelop(); // Enable Swagger in development environment
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
 app.UseCorsPolicy(); // Apply the configured CORS policy
 app.UseRouting(); // Enable routing
