@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/AESInsight/Backend/compare/v1.4.1...v1.4.2) (2025-04-08)
+
+
+### Bug Fixes
+
+* Removes build errors ([78c21dc](https://github.com/AESInsight/Backend/commit/78c21dcbf78014f4a49b3894405797724aff8457))
+
 ## [1.4.1](https://github.com/AESInsight/Backend/compare/v1.4.0...v1.4.1) (2025-04-08)
 
 
