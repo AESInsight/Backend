@@ -1,10 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.Models
 {
-public class User
-{
-    public int UserId { get; set; }
-    public string Username { get; set; } = null!;
-    public string Password { get; set; } = null!;
-    public string Role { get; set; } = "User"; 
-}
+    public class User
+    {
+        [Key]
+        public int UserId { get; set; } // Changed from Id to UserId
+
+        [Required]
+        [MaxLength(50)]
+        public string Username { get; set; } = null!;
+
+        [Required]
+        public byte[] PasswordHash { get; set; } = null!;
+
+        [Required]
+        public byte[] PasswordSalt { get; set; } = null!;
+
+        [Required]
+        [MaxLength(20)]
+        public string Role { get; set; } = "User"; // Default role
+    }
 }
