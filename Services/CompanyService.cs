@@ -48,6 +48,19 @@ public class CompanyService : ICompanyService
         // Update the values of the existing company
         existingCompany.CompanyName = company.CompanyName;
         existingCompany.CVR = company.CVR;
+        existingCompany.Email = company.Email;
+        
+        // Only update the password if a new one is provided
+        if (!string.IsNullOrEmpty(company.PasswordHash))
+        {
+            existingCompany.PasswordHash = company.PasswordHash;
+        }
+        
+        // Only update the email password if a new one is provided
+        if (!string.IsNullOrEmpty(company.EmailPassword))
+        {
+            existingCompany.EmailPassword = company.EmailPassword;
+        }
 
         // Save the changes
         await _dbContext.SaveChangesAsync();
@@ -69,15 +82,18 @@ public class CompanyService : ICompanyService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task InsertCompanyAsync(int companyId, string companyName, string cvr)
+    public async Task InsertCompanyAsync(int companyId, string companyName, string cvr, string email, string passwordHash, string emailPassword)
     {
-        var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR) VALUES (@CompanyID, @CompanyName, @CVR)";
+        var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR, Email, PasswordHash, EmailPassword) VALUES (@CompanyID, @CompanyName, @CVR, @Email, @PasswordHash, @EmailPassword)";
         await _dbContext.Database.ExecuteSqlRawAsync(sql, 
             new[] 
             {
                 new Microsoft.Data.SqlClient.SqlParameter("@CompanyID", companyId),
                 new Microsoft.Data.SqlClient.SqlParameter("@CompanyName", companyName),
-                new Microsoft.Data.SqlClient.SqlParameter("@CVR", cvr)
+                new Microsoft.Data.SqlClient.SqlParameter("@CVR", cvr),
+                new Microsoft.Data.SqlClient.SqlParameter("@Email", email),
+                new Microsoft.Data.SqlClient.SqlParameter("@PasswordHash", passwordHash),
+                new Microsoft.Data.SqlClient.SqlParameter("@EmailPassword", emailPassword)
             });
     }
 
@@ -85,7 +101,7 @@ public class CompanyService : ICompanyService
     {
         foreach (var company in companies)
         {
-            await InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR);
+            await InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR, company.Email, company.PasswordHash, company.EmailPassword);
         }
     }
 
@@ -101,20 +117,26 @@ public class CompanyService : ICompanyService
             {
                 CompanyID = i, // 1, 2, 3, etc.
                 CompanyName = $"Company {i}",
-                CVR = random.Next(10000000, 99999999).ToString() // Random 8-digit CVR number
+                CVR = random.Next(10000000, 99999999).ToString(), // Random 8-digit CVR number
+                Email = $"company{i}@example.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
+                EmailPassword = "EmailPassword123" // Sample email password
             });
         }
 
         // Insert data into the database
         foreach (var company in sampleCompanies)
         {
-            var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR) VALUES (@CompanyID, @CompanyName, @CVR)";
+            var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR, Email, PasswordHash, EmailPassword) VALUES (@CompanyID, @CompanyName, @CVR, @Email, @PasswordHash, @EmailPassword)";
             await _dbContext.Database.ExecuteSqlRawAsync(sql,
                 new[]
                 {
                     new Microsoft.Data.SqlClient.SqlParameter("@CompanyID", company.CompanyID),
                     new Microsoft.Data.SqlClient.SqlParameter("@CompanyName", company.CompanyName),
-                    new Microsoft.Data.SqlClient.SqlParameter("@CVR", company.CVR)
+                    new Microsoft.Data.SqlClient.SqlParameter("@CVR", company.CVR),
+                    new Microsoft.Data.SqlClient.SqlParameter("@Email", company.Email),
+                    new Microsoft.Data.SqlClient.SqlParameter("@PasswordHash", company.PasswordHash),
+                    new Microsoft.Data.SqlClient.SqlParameter("@EmailPassword", company.EmailPassword)
                 });
         }
     }
