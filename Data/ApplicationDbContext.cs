@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using System.Text;
 
 namespace Backend.Data;
 
@@ -16,7 +17,7 @@ public class ApplicationDbContext : DbContext
     // DbSet for CompanyModel
     public DbSet<CompanyModel> Companies { get; set; }
 
-    public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,19 +47,24 @@ public class ApplicationDbContext : DbContext
         });
 
         // Seed Users
+        var adminHmac = new System.Security.Cryptography.HMACSHA512();
+        var userHmac = new System.Security.Cryptography.HMACSHA512();
+
         modelBuilder.Entity<User>().HasData(
             new User
             {
                 UserId = 1,
                 Username = "admin",
-                Password = "$2a$11$K7tih2DcSVCdM9LTf5lmne41uEffe6LXZHT7AmV4mGc4/vbB1NIiG", // Hashed password
+                PasswordHash = adminHmac.ComputeHash(Encoding.UTF8.GetBytes("adminpassword")),
+                PasswordSalt = adminHmac.Key,
                 Role = "Admin"
             },
             new User
             {
                 UserId = 2,
                 Username = "user",
-                Password = "$2a$11$ymlFcuiFXHLSXD3yEvFp5uFrvkf8FIT6wn/nQYDYgb7B.O0T4oTYS", // Hashed password
+                PasswordHash = userHmac.ComputeHash(Encoding.UTF8.GetBytes("userpassword")),
+                PasswordSalt = userHmac.Key,
                 Role = "User"
             }
         );
