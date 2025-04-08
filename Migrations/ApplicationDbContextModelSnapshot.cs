@@ -59,11 +59,9 @@ namespace Backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("JobTitle")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<double>("Salary")
@@ -84,17 +82,23 @@ namespace Backend.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
 
-                    b.Property<string>("Password")
+                    b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("longblob");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("longblob");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.HasKey("UserId");
 
@@ -104,14 +108,16 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-                            Password = "$2a$11$K7tih2DcSVCdM9LTf5lmne41uEffe6LXZHT7AmV4mGc4/vbB1NIiG",
+                            PasswordHash = new byte[] { 89, 142, 137, 64, 69, 220, 79, 95, 65, 119, 230, 147, 223, 237, 33, 152, 238, 212, 1, 67, 236, 210, 115, 187, 19, 157, 42, 206, 147, 100, 79, 176, 207, 3, 76, 11, 197, 81, 53, 170, 190, 208, 236, 25, 194, 43, 158, 22, 8, 170, 201, 36, 161, 129, 86, 139, 145, 162, 203, 163, 11, 15, 15, 176 },
+                            PasswordSalt = new byte[] { 203, 191, 238, 60, 127, 183, 3, 230, 216, 57, 104, 186, 92, 42, 108, 19, 61, 100, 135, 181, 219, 54, 191, 231, 223, 50, 134, 142, 182, 169, 149, 17, 106, 147, 241, 156, 208, 178, 44, 207, 28, 151, 174, 62, 70, 175, 39, 106, 140, 209, 121, 115, 239, 106, 19, 58, 93, 147, 23, 102, 176, 126, 219, 25, 106, 131, 225, 73, 86, 55, 23, 166, 22, 157, 68, 106, 136, 28, 183, 51, 19, 54, 38, 159, 206, 55, 59, 242, 136, 74, 34, 111, 116, 250, 178, 231, 44, 168, 36, 45, 235, 99, 228, 247, 90, 74, 85, 134, 6, 182, 79, 217, 188, 179, 177, 232, 233, 138, 31, 76, 135, 208, 53, 43, 71, 201, 254, 64 },
                             Role = "Admin",
                             Username = "admin"
                         },
                         new
                         {
                             UserId = 2,
-                            Password = "$2a$11$ymlFcuiFXHLSXD3yEvFp5uFrvkf8FIT6wn/nQYDYgb7B.O0T4oTYS",
+                            PasswordHash = new byte[] { 11, 124, 221, 185, 101, 181, 127, 85, 162, 20, 205, 238, 211, 159, 48, 240, 69, 88, 245, 195, 76, 3, 75, 88, 164, 165, 231, 186, 226, 205, 250, 88, 166, 166, 145, 71, 152, 186, 154, 137, 114, 6, 232, 101, 2, 127, 28, 86, 112, 41, 35, 195, 222, 152, 67, 93, 130, 48, 172, 152, 219, 69, 186, 41 },
+                            PasswordSalt = new byte[] { 203, 191, 238, 60, 127, 183, 3, 230, 216, 57, 104, 186, 92, 42, 108, 19, 61, 100, 135, 181, 219, 54, 191, 231, 223, 50, 134, 142, 182, 169, 149, 17, 106, 147, 241, 156, 208, 178, 44, 207, 28, 151, 174, 62, 70, 175, 39, 106, 140, 209, 121, 115, 239, 106, 19, 58, 93, 147, 23, 102, 176, 126, 219, 25, 106, 131, 225, 73, 86, 55, 23, 166, 22, 157, 68, 106, 136, 28, 183, 51, 19, 54, 38, 159, 206, 55, 59, 242, 136, 74, 34, 111, 116, 250, 178, 231, 44, 168, 36, 45, 235, 99, 228, 247, 90, 74, 85, 134, 6, 182, 79, 217, 188, 179, 177, 232, 233, 138, 31, 76, 135, 208, 53, 43, 71, 201, 254, 64 },
                             Role = "User",
                             Username = "user"
                         });
