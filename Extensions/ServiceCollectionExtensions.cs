@@ -36,7 +36,10 @@ namespace Backend.Extensions
                 options.AddPolicy("AllowFrontend",
                     builder =>
                     {
-                        builder.WithOrigins("https://aes-insight.dk")
+                    builder.WithOrigins(
+                            "http://localhost:5173", // Frontend URL for local development
+                            "https://aes-insight.dk" // Production website
+                        )
                                .AllowAnyMethod()
                                .AllowAnyHeader();
                     });
