@@ -20,5 +20,5 @@ public class EmployeeModel
     public int CompanyID { get; set; } // Foreign key referencing the company
 
     [ForeignKey("CompanyID")]
-    public CompanyModel Company { get; set; } // Navigation property for the related Company
+    public CompanyModel? Company { get; set; } // Navigation property for the related Company
 }
