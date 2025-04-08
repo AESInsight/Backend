@@ -24,15 +24,9 @@ public class CompanyService : ICompanyService
         var company = await _dbContext.Companies.FindAsync(id);
         if (company == null)
         {
-            throw new Exception($"Company with ID {id} not found.");
+            throw new KeyNotFoundException($"Company with ID {id} not found.");
         }
         return company;
-    }
-
-    public async Task CreateCompanyAsync(CompanyModel company)
-    {
-        await _dbContext.Companies.AddAsync(company);
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task UpdateCompanyAsync(CompanyModel company)
@@ -42,7 +36,12 @@ public class CompanyService : ICompanyService
 
         if (existingCompany == null)
         {
-            throw new Exception($"Company with ID {company.CompanyID} not found.");
+            throw new KeyNotFoundException($"Company with ID {company.CompanyID} not found.");
+        }
+
+        if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+        {
+            throw new ArgumentException("CVR must be exactly 8 digits.");
         }
 
         // Update the values of the existing company
@@ -63,30 +62,26 @@ public class CompanyService : ICompanyService
         }
     }
 
-    public async Task BulkCreateCompaniesAsync(List<CompanyModel> companies)
+    public async Task DeleteAllCompaniesAsync()
     {
-        await _dbContext.Companies.AddRangeAsync(companies);
+        var companies = await _dbContext.Companies.ToListAsync();
+        _dbContext.Companies.RemoveRange(companies);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task InsertCompanyAsync(int companyId, string companyName, string cvr)
-    {
-        var sql = "INSERT INTO Company (CompanyID, CompanyName, CVR) VALUES (@CompanyID, @CompanyName, @CVR)";
-        await _dbContext.Database.ExecuteSqlRawAsync(sql, 
-            new[] 
-            {
-                new Microsoft.Data.SqlClient.SqlParameter("@CompanyID", companyId),
-                new Microsoft.Data.SqlClient.SqlParameter("@CompanyName", companyName),
-                new Microsoft.Data.SqlClient.SqlParameter("@CVR", cvr)
-            });
-    }
-
-    public async Task BulkInsertCompaniesAsync(List<CompanyModel> companies)
+    public async Task CreateCompaniesAsync(List<CompanyModel> companies)
     {
         foreach (var company in companies)
         {
-            await InsertCompanyAsync(company.CompanyID, company.CompanyName, company.CVR);
+            // Validate CVR
+            if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+            {
+                throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");
+            }
         }
+
+        await _dbContext.Companies.AddRangeAsync(companies);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task GenerateSampleCompaniesAsync()
