@@ -15,6 +15,7 @@ public class PasswordResetController : ControllerBase
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<PasswordResetController> _logger;
     private readonly ICompanyService _companyService;
+    private static readonly Dictionary<string, (string Email, DateTime Expiration)> _resetTokens = new();
 
     public PasswordResetController(
         IEmailService emailService, 
@@ -38,6 +39,8 @@ public class PasswordResetController : ControllerBase
         }
 
         var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        var expiration = DateTime.UtcNow.AddMinutes(5);
+        _resetTokens[token] = (request.Email, expiration);
         await _emailService.SendPasswordResetEmailAsync(request.Email, token);
 
         return Ok(new { message = "If your email is registered, you will receive a password reset link." });
@@ -46,17 +49,31 @@ public class PasswordResetController : ControllerBase
     [HttpPost("reset")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == request.Email);
+        if (request.NewPassword != request.ConfirmPassword)
+        {
+            return BadRequest(new { message = "Passwords do not match" });
+        }
+
+        if (!_resetTokens.TryGetValue(request.Token, out var tokenInfo))
+        {
+            return BadRequest(new { message = "Invalid token" });
+        }
+
+        if (DateTime.UtcNow > tokenInfo.Expiration)
+        {
+            _resetTokens.Remove(request.Token);
+            return BadRequest(new { message = "Token has expired. Please request a new password reset." });
+        }
+
+        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == tokenInfo.Email);
         if (company == null)
         {
             return BadRequest(new { message = "Invalid request" });
         }
 
-        // In a real implementation, you would verify the token here
-        // For now, we'll just update the password
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-        company.PasswordHash = newPasswordHash;
+        company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
         await _dbContext.SaveChangesAsync();
+        _resetTokens.Remove(request.Token);
 
         return Ok(new { message = "Password has been reset successfully" });
     }
@@ -76,9 +93,9 @@ public class PasswordResetRequest
 
 public class ResetPasswordRequest
 {
-    public string Email { get; set; } = null!;
     public string Token { get; set; } = null!;
     public string NewPassword { get; set; } = null!;
+    public string ConfirmPassword { get; set; } = null!;
 }
 
 public class VerifyPasswordRequest
