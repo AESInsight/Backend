@@ -24,7 +24,7 @@ public class CompanyService : ICompanyService
         var company = await _dbContext.Companies.FindAsync(id);
         if (company == null)
         {
-            throw new Exception($"Company with ID {id} not found.");
+            throw new KeyNotFoundException($"Company with ID {id} not found.");
         }
         return company;
     }
@@ -36,7 +36,7 @@ public class CompanyService : ICompanyService
 
         if (existingCompany == null)
         {
-            throw new Exception($"Company with ID {company.CompanyID} not found.");
+            throw new KeyNotFoundException($"Company with ID {company.CompanyID} not found.");
         }
 
         // Update the values of the existing company

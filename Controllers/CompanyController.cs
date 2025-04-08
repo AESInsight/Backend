@@ -19,52 +19,77 @@ public class CompanyController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllCompanies()
     {
-        var companies = await _companyService.GetAllCompaniesAsync();
-        return Ok(companies);
+        try
+        {
+            var companies = await _companyService.GetAllCompaniesAsync();
+            return Ok(companies);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving companies", details = ex.Message });
+        }
     }
 
     // GET: api/company/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCompanyById(int id)
     {
-        var company = await _companyService.GetCompanyByIdAsync(id);
-        if (company == null)
+        try
         {
-            return NotFound(new { message = "Company not found" });
+            var company = await _companyService.GetCompanyByIdAsync(id);
+            return Ok(company);
         }
-        return Ok(company);
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving the company", details = ex.Message });
+        }
     }
 
     // POST: api/company
     [HttpPost]
     public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyModel> companies)
     {
-        if (companies == null || !companies.Any())
+        try
         {
-            return BadRequest(new { message = "No companies provided" });
-        }
+            if (companies == null || !companies.Any())
+            {
+                return BadRequest(new { message = "No companies provided" });
+            }
 
-        await _companyService.CreateCompaniesAsync(companies);
-        return Ok(new { message = "Companies inserted successfully", count = companies.Count });
+            await _companyService.CreateCompaniesAsync(companies);
+            return Ok(new { message = "Companies inserted successfully", count = companies.Count });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while inserting companies", details = ex.Message });
+        }
     }
 
     // PUT: api/company/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCompany(int id, [FromBody] CompanyModel company)
     {
-        if (company == null || id != company.CompanyID)
-        {
-            return BadRequest(new { message = "Invalid company data" });
-        }
-
         try
         {
+            if (company == null || id != company.CompanyID)
+            {
+                return BadRequest(new { message = "Invalid company data" });
+            }
+
             await _companyService.UpdateCompanyAsync(company);
             return NoContent();
         }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
-            return NotFound(new { message = ex.Message });
+            return StatusCode(500, new { error = "An error occurred while updating the company", details = ex.Message });
         }
     }
 
@@ -72,14 +97,25 @@ public class CompanyController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCompany(int id)
     {
-        var existingCompany = await _companyService.GetCompanyByIdAsync(id);
-        if (existingCompany == null)
+        try
         {
-            return NotFound(new { message = "Company not found" });
-        }
+            var existingCompany = await _companyService.GetCompanyByIdAsync(id);
+            if (existingCompany == null)
+            {
+                return NotFound(new { message = "Company not found" });
+            }
 
-        await _companyService.DeleteCompanyAsync(id);
-        return NoContent();
+            await _companyService.DeleteCompanyAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while deleting the company", details = ex.Message });
+        }
     }
 
     // POST: api/company/generate-sample-companies
@@ -97,6 +133,7 @@ public class CompanyController : ControllerBase
         }
     }
 
+    // DELETE: api/company/delete-all
     [HttpDelete("delete-all")]
     public async Task<IActionResult> DeleteAllCompanies()
     {
