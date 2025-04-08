@@ -11,7 +11,7 @@ namespace Backend.Extensions
 {
     public static class WebApplicationExtensions
     {
-        public static IApplicationBuilder UseSwagger(this IApplicationBuilder app)
+        public static IApplicationBuilder UseSwaggerDevelop(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
             // Enable Swagger and Swagger UI
