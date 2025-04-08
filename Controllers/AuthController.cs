@@ -1,5 +1,5 @@
 using Backend.Data;
-using Backend.Models; // Add this line
+using Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -108,6 +108,6 @@ namespace Backend.Controllers
     {
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
-        public string Role { get; set; } = "User"; // Default role
+        public string Role { get; set; } = "User";
     }
 }
