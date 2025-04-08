@@ -66,6 +66,11 @@ namespace Backend.Controllers
 
         private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password), "Password cannot be null.");
+            }
+
             using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
             {
                 var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
@@ -76,24 +81,27 @@ namespace Backend.Controllers
         private string GenerateJwtToken(string username, string role)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+            var keyString = jwtSettings["Key"] ?? "DefaultSecretKey"; // Provide a default key
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        
+
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, username),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-        
+
+            var expireMinutes = double.Parse(jwtSettings["ExpireMinutes"] ?? "30");
+
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
                 signingCredentials: creds
             );
-        
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
