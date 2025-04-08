@@ -4,6 +4,8 @@ using MimeKit;
 using Backend.Models;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.Services;
 
@@ -33,7 +35,7 @@ public class EmailService : IEmailService
         var smtpSettings = _configuration.GetSection("SmtpSettings");
         var smtpServer = smtpSettings["Server"];
         var smtpPort = 587;
-        
+
         var message = new MimeMessage();
         // Use our fixed one.com email for sending
         message.From.Add(new MailboxAddress("AES Insight", "cff@aes-insight.dk"));
@@ -54,15 +56,15 @@ public class EmailService : IEmailService
                     <li>Click 'Try it out'</li>
                     <li>Enter the following information:
                         <ul>
-                            <li>email: {company.Email}</li>
                             <li>token: {resetToken}</li>
                             <li>newPassword: (your new password)</li>
+                            <li>confirmPassword: (your new password again)</li>
                         </ul>
                     </li>
                     <li>Click 'Execute'</li>
                 </ol>
-                <p>If you didn't request this, please ignore this email.</p>
-                <p>This token will expire in 1 hour.</p>
+                <p><strong>Important:</strong> This token will expire in 5 minutes.</p>
+                <p>If you did not request this password reset, please ignore this email.</p>
                 <p>Best regards,<br>AES Insight Team</p>
             "
         };
