@@ -21,10 +21,8 @@ var key = Encoding.UTF8.GetBytes(jwtKey);
 // Configure services
 builder.Services.ConfigureDatabase(builder.Configuration); // Configure the database connection
 builder.Services.ConfigureSwagger(); // Configure Swagger for API documentation
-Backend.Extensions.WebApplicationExtensions.ConfigureCors(builder.Services); // Explicitly use the custom ConfigureCors method
+builder.Services.ConfigureCors(); // Explicitly use the custom ConfigureCors method
 builder.Services.AddControllers(); // Add support for controllers
-builder.Services.AddEndpointsApiExplorer(); // Add support for endpoint exploration
-builder.Services.AddSwaggerGen(); // Add Swagger generation
 
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>(); // Register EmployeeService
@@ -85,7 +83,7 @@ var app = builder.Build();
 app.Urls.Add("http://localhost:5170"); // Ensure the backend listens on the correct host and port
 
 // Configure middleware
-app.UseSwaggerIfDevelopment(); // Enable Swagger in development environment
+app.UseSwagger(); // Enable Swagger in development environment
 app.UseHttpsRedirection(); // Redirect HTTP requests to HTTPS
 app.UseCorsPolicy(); // Apply the configured CORS policy
 app.UseRouting(); // Enable routing
