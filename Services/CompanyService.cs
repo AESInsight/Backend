@@ -39,6 +39,11 @@ public class CompanyService : ICompanyService
             throw new KeyNotFoundException($"Company with ID {company.CompanyID} not found.");
         }
 
+        if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+        {
+            throw new ArgumentException("CVR must be exactly 8 digits.");
+        }
+
         // Update the values of the existing company
         existingCompany.CompanyName = company.CompanyName;
         existingCompany.CVR = company.CVR;
@@ -66,6 +71,15 @@ public class CompanyService : ICompanyService
 
     public async Task CreateCompaniesAsync(List<CompanyModel> companies)
     {
+        foreach (var company in companies)
+        {
+            // Validate CVR
+            if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+            {
+                throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");
+            }
+        }
+
         await _dbContext.Companies.AddRangeAsync(companies);
         await _dbContext.SaveChangesAsync();
     }
