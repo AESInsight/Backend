@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/AESInsight/Backend/compare/v1.4.0...v1.4.1) (2025-04-08)
+
+
+### Bug Fixes
+
+* updates deploy file path ([a31b427](https://github.com/AESInsight/Backend/commit/a31b427122ef0e227af929633ca6270c225fac1d))
+
 # [1.4.0](https://github.com/AESInsight/Backend/compare/v1.3.1...v1.4.0) (2025-04-08)
 
 
