@@ -75,7 +75,7 @@ public class EmailService : IEmailService
         await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
         
         // Use our fixed one.com credentials
-        await client.AuthenticateAsync(smtpUsername, smtpPassword);
+        await client.AuthenticateAsync("cff@aes-insight.dk", "#SecurePassword123");
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
     }
