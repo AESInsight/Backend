@@ -11,10 +11,8 @@ namespace Backend.Extensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var dbConfig = configuration.GetSection("DatabaseConfig").Get<DatabaseConfig>();
             var connectionString = Environment.GetEnvironmentVariable("GH_SECRET_CONNECTIONSTRING") 
-                ?? dbConfig?.ConnectionString 
-                ?? throw new InvalidOperationException("Connection string not found");
+                ?? throw new InvalidOperationException("GitHub secret connection string not found");
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -38,7 +36,10 @@ namespace Backend.Extensions
                 options.AddPolicy("AllowFrontend",
                     builder =>
                     {
-                        builder.WithOrigins("https://aes-insight.dk")
+                    builder.WithOrigins(
+                            "http://localhost:5173", // Frontend URL for local development
+                            "https://aes-insight.dk" // Production website
+                        )
                                .AllowAnyMethod()
                                .AllowAnyHeader();
                     });

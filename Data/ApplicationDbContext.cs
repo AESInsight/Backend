@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
-
+using System.Text;
 
 namespace Backend.Data;
 
@@ -11,17 +11,62 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<YourModel> YourModels { get; set; }
+    // DbSet for EmployeeModel
+    public DbSet<EmployeeModel> Employee { get; set; }
+
+    // DbSet for CompanyModel
+    public DbSet<CompanyModel> Companies { get; set; }
+
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
-        // Apply seed data
-        DbSeeder.SeedData(modelBuilder);
-    }
 
-    // Add your DbSet properties here for your entities
-    // Example:
-    // public DbSet<YourEntity> YourEntities { get; set; }
-} 
+        // Configure table names explicitly
+        modelBuilder.Entity<EmployeeModel>().ToTable("Employee");
+        modelBuilder.Entity<CompanyModel>().ToTable("Company");
+
+        // Configure the relationship between EmployeeModel and CompanyModel
+        modelBuilder.Entity<EmployeeModel>()
+            .HasOne(e => e.Company)
+            .WithMany()
+            .HasForeignKey(e => e.CompanyID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Additional configuration for CompanyModel
+        modelBuilder.Entity<CompanyModel>(entity =>
+        {
+            entity.HasKey(c => c.CompanyID); // Primary key
+            entity.Property(c => c.CompanyName)
+                  .IsRequired()
+                  .HasMaxLength(255); // Maximum length for CompanyName
+            entity.Property(c => c.CVR)
+                  .IsRequired()
+                  .HasMaxLength(8); // CVR must be exactly 8 characters
+        });
+
+        // Seed Users
+        var adminHmac = new System.Security.Cryptography.HMACSHA512();
+        var userHmac = new System.Security.Cryptography.HMACSHA512();
+
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                UserId = 1,
+                Username = "admin",
+                PasswordHash = adminHmac.ComputeHash(Encoding.UTF8.GetBytes("adminpassword")),
+                PasswordSalt = adminHmac.Key,
+                Role = "Admin"
+            },
+            new User
+            {
+                UserId = 2,
+                Username = "user",
+                PasswordHash = userHmac.ComputeHash(Encoding.UTF8.GetBytes("userpassword")),
+                PasswordSalt = userHmac.Key,
+                Role = "User"
+            }
+        );
+    }
+}
