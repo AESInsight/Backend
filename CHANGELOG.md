@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/AESInsight/Backend/compare/v1.3.0...v1.3.1) (2025-04-08)
+
+
+### Bug Fixes
+
+* cleans code in middleware ([9bda382](https://github.com/AESInsight/Backend/commit/9bda382343dc18e93ca963a338043febf09012bd))
+
 # [1.3.0](https://github.com/AESInsight/Backend/compare/v1.2.0...v1.3.0) (2025-04-01)
 
 
