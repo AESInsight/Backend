@@ -19,10 +19,10 @@ jobs:
           dotnet-version: '8.0.x'  # adjust to your target version
 
       - name: Restore dependencies
-        run: dotnet restore ./YourWebApiProject.csproj
+        run: dotnet restore ./Backend.csproj
 
       - name: Build and publish
-        run: dotnet publish ./YourWebApiProject.csproj -c Release -o ./publish
+        run: dotnet publish ./Backend.csproj -c Release -o ./publish
 
       - name: Deploy via SFTP
         uses: appleboy/scp-action@master
