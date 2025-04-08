@@ -37,7 +37,7 @@ namespace Backend.Extensions
                     builder =>
                     {
                     builder.WithOrigins(
-                            "http://localhost:5174", // Frontend URL for local development
+                            "http://localhost:5173", // Frontend URL for local development
                             "https://aes-insight.dk" // Production website
                         )
                                .AllowAnyMethod()
