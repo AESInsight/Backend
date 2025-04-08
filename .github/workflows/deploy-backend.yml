@@ -1,0 +1,35 @@
+name: Deploy .NET Web API via SFTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'  # adjust to your target version
+
+      - name: Restore dependencies
+        run: dotnet restore ./YourWebApiProject.csproj
+
+      - name: Build and publish
+        run: dotnet publish ./YourWebApiProject.csproj -c Release -o ./publish
+
+      - name: Deploy via SFTP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          source: "publish/"
+          target: "webroots/e937548c/"
