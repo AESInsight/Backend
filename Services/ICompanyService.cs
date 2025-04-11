@@ -11,4 +11,6 @@ public interface ICompanyService
     Task DeleteCompanyAsync(int id); // Delete a company by ID
     Task DeleteAllCompaniesAsync(); // Delete all companies
     Task GenerateSampleCompaniesAsync(); // Generate sample companies
+    Task<CompanyModel?> GetCompanyByEmailAsync(string email);
+    Task<bool> VerifyPasswordAsync(string email, string password);
 }

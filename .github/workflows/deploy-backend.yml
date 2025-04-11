@@ -1,4 +1,4 @@
-name: Deploy .NET Web API via SFTP
+name: Deploy .NET Web API to Azure
 
 on:
   push:
@@ -9,7 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -17,20 +16,21 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'  # adjust to your target version
+          dotnet-version: '8.0.x'
 
       - name: Restore dependencies
         run: dotnet restore ./Backend.csproj
 
-      - name: Build and publish
-        run: dotnet publish ./Backend.csproj -c Release -o ./publish
+      - name: Build the project
+        run: dotnet build ./Backend.csproj --configuration Release
 
-      - name: Deploy via SFTP
-        uses: appleboy/scp-action@master
+      - name: Publish the project
+        run: dotnet publish ./Backend.csproj --configuration Release --output ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
         with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USERNAME }}
-          password: ${{ secrets.SFTP_PASSWORD }}
-          port: 22
-          source: "publish/*"
-          target: "webroots/e937548c/"
+          app-name: aes-backend     
+          slot-name: Production
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./publish

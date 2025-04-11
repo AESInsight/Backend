@@ -27,6 +27,7 @@ builder.Services.AddControllers(); // Add support for controllers
 // Register services
 builder.Services.AddScoped<IEmployeeService, EmployeeService>(); // Register EmployeeService
 builder.Services.AddScoped<ICompanyService, CompanyService>(); // Register CompanyService
+builder.Services.AddScoped<IEmailService, EmailService>(); // Register EmailService
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -80,7 +81,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-app.Urls.Add("http://localhost:5170"); // Ensure the backend listens on the correct host and port
 
 // Configure middleware
 app.UseSwaggerDevelop(); // Enable Swagger in development environment
