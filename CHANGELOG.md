@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/AESInsight/Backend/compare/v1.5.1...v1.5.2) (2025-04-11)
+
+
+### Bug Fixes
+
+* Improves controllers and general codespace. Adds DTOs. ([77432fa](https://github.com/AESInsight/Backend/commit/77432faa6aaacbd583bf674d8743180303e2cbfa))
+* Removes all authorization from employee controller ([caef41e](https://github.com/AESInsight/Backend/commit/caef41ec356f8c39723d131e3f2f39fb0f5d1203))
+
 ## [1.5.1](https://github.com/AESInsight/Backend/compare/v1.5.0...v1.5.1) (2025-04-11)
 
 
