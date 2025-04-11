@@ -40,4 +40,4 @@ jobs:
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ./publish
         env:
-          GitHubSecretConnectionString: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
+          GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
