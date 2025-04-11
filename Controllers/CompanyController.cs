@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
+using Backend.Models.DTO;
 
 namespace Backend.Controllers;
 
@@ -22,7 +23,16 @@ public class CompanyController : ControllerBase
         try
         {
             var companies = await _companyService.GetAllCompaniesAsync();
-            return Ok(companies);
+            var companyDTOs = companies.Select(c => new CompanyDTO
+            {
+                CompanyID = c.CompanyID,
+                CompanyName = c.CompanyName,
+                CVR = c.CVR,
+                Email = c.Email,
+                PasswordHash = c.PasswordHash // Include PasswordHash in the mapping
+            }).ToList();
+
+            return Ok(companyDTOs);
         }
         catch (Exception ex)
         {
@@ -37,7 +47,16 @@ public class CompanyController : ControllerBase
         try
         {
             var company = await _companyService.GetCompanyByIdAsync(id);
-            return Ok(company);
+            var companyDTO = new CompanyDTO
+            {
+                CompanyID = company.CompanyID,
+                CompanyName = company.CompanyName,
+                CVR = company.CVR,
+                Email = company.Email,
+                PasswordHash = company.PasswordHash // Include PasswordHash in the mapping
+            };
+
+            return Ok(companyDTO);
         }
         catch (KeyNotFoundException ex)
         {
@@ -51,14 +70,22 @@ public class CompanyController : ControllerBase
 
     // POST: api/company
     [HttpPost]
-    public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyModel> companies)
+    public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyDTO> companyDTOs)
     {
         try
         {
-            if (companies == null || !companies.Any())
+            if (companyDTOs == null || !companyDTOs.Any())
             {
                 return BadRequest(new { message = "No companies provided" });
             }
+
+            var companies = companyDTOs.Select(dto => new CompanyModel
+            {
+                CompanyName = dto.CompanyName,
+                CVR = dto.CVR,
+                Email = dto.Email,
+                PasswordHash = dto.PasswordHash 
+            }).ToList();
 
             await _companyService.CreateCompaniesAsync(companies);
             return Ok(new { message = "Companies inserted successfully", count = companies.Count });

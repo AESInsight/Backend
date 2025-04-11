@@ -49,11 +49,15 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeModel> GetEmployeeByIdAsync(int id)
     {
-        var employee = await _context.Employee.FindAsync(id);
+        var employee = await _context.Employee
+            .Include(e => e.Company) // Include related Company data
+            .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
         if (employee == null)
         {
             throw new KeyNotFoundException($"Employee with ID {id} was not found.");
         }
+
         return employee;
     }
 

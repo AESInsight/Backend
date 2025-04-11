@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Backend.Models.DTOs;
 
 namespace Backend.Controllers;
 
@@ -28,7 +29,24 @@ public class EmployeeController : ControllerBase
         try
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
-            return Ok(employee);
+
+            if (employee == null)
+            {
+                return NotFound(new { error = $"Employee with ID {id} not found" });
+            }
+
+            // Map EmployeeModel to EmployeeDto
+            var employeeDto = new EmployeeDto
+            {
+                EmployeeID = employee.EmployeeID,
+                JobTitle = employee.JobTitle,
+                Salary = employee.Salary,
+                Experience = employee.Experience,
+                Gender = employee.Gender,
+                CompanyID = employee.CompanyID
+            };
+
+            return Ok(employeeDto);
         }
         catch (KeyNotFoundException ex)
         {
@@ -45,15 +63,25 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var employees = await _employeeService.GetAllEmployeesAsync();
-            var filteredEmployees = employees.Where(e => e.CompanyID == companyId).ToList();
+            var employees = await _dbContext.Employee
+                .Where(e => e.CompanyID == companyId)
+                .Select(e => new EmployeeDto
+                {
+                    EmployeeID = e.EmployeeID,
+                    JobTitle = e.JobTitle,
+                    Salary = e.Salary,
+                    Experience = e.Experience,
+                    Gender = e.Gender,
+                    CompanyID = e.CompanyID
+                })
+                .ToListAsync();
 
-            if (!filteredEmployees.Any())
+            if (!employees.Any())
             {
                 return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
             }
 
-            return Ok(filteredEmployees);
+            return Ok(employees);
         }
         catch (Exception ex)
         {
@@ -62,7 +90,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("add")]
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
         try
@@ -117,7 +145,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPut("update/{id}")]
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeeModel updatedEmployee)
     {
         try
@@ -154,7 +182,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteEmployee(int id)
     {
         try
@@ -260,8 +288,16 @@ public class EmployeeController : ControllerBase
         try
         {
             var employees = await _dbContext.Employee
-                .Include(e => e.Company) // Include related Company data if needed
-                    .OrderBy(e => e.EmployeeID) // Sort by EmployeeID in ascending order
+                .OrderBy(e => e.EmployeeID)
+                .Select(e => new EmployeeDto
+                {
+                    EmployeeID = e.EmployeeID,
+                    JobTitle = e.JobTitle,
+                    Salary = e.Salary,
+                    Experience = e.Experience,
+                    Gender = e.Gender,
+                    CompanyID = e.CompanyID
+                })
                 .ToListAsync();
 
             if (!employees.Any())
