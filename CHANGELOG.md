@@ -1,3 +1,20 @@
+# [1.5.0](https://github.com/AESInsight/Backend/compare/v1.4.3...v1.5.0) (2025-04-11)
+
+
+### Bug Fixes
+
+* Fixes email sending out mail ([b578738](https://github.com/AESInsight/Backend/commit/b578738c022fb575baf96d150a38d5cd92b7f548))
+* Fixes the reset password, so we can test it ([534ed18](https://github.com/AESInsight/Backend/commit/534ed18fb2d983eb9d68c877f8e186407d160386))
+* fixes this branch, so it matches develope to avoid conflicts ([40ecff7](https://github.com/AESInsight/Backend/commit/40ecff7dbdc0ef1b431bc4a0139ac36419b40f39))
+* Update Services/EmailService.cs ([96e155f](https://github.com/AESInsight/Backend/commit/96e155f07588aa012102fc66b91b35c5663373df))
+
+
+### Features
+
+* Adds confirmpassword and removes email from Passwordreset/reset ([1230389](https://github.com/AESInsight/Backend/commit/123038936618fec9c68a8dba93ffbbdcf23b3a96))
+* Adds correct mail instructions ([288ae4c](https://github.com/AESInsight/Backend/commit/288ae4c5e3885f05830196c0789e5b2aaf05ec1d))
+* Adds reset password function ([fb16cbf](https://github.com/AESInsight/Backend/commit/fb16cbf0a9d6e057304807e23e1e30ba3e167638))
+
 ## [1.4.3](https://github.com/AESInsight/Backend/compare/v1.4.2...v1.4.3) (2025-04-08)
 
 
