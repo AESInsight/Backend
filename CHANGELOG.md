@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/AESInsight/Backend/compare/v1.5.0...v1.5.1) (2025-04-11)
+
+
+### Bug Fixes
+
+* app name ([56f4f45](https://github.com/AESInsight/Backend/commit/56f4f45861dfd0f28e791f774e6860f49f6aaff6))
+
 # [1.5.0](https://github.com/AESInsight/Backend/compare/v1.4.3...v1.5.0) (2025-04-11)
 
 
