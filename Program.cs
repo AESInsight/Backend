@@ -81,7 +81,6 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-app.Urls.Add("http://localhost:5170"); // Ensure the backend listens on the correct host and port
 
 // Configure middleware
 app.UseSwaggerDevelop(); // Enable Swagger in development environment
