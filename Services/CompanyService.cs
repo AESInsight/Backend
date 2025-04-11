@@ -81,17 +81,62 @@ public class CompanyService : ICompanyService
     
     public async Task CreateCompaniesAsync(List<CompanyModel> companies)
     {
-        foreach (var company in companies)
+        try
         {
-            // Validate CVR
-            if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+            foreach (var company in companies)
             {
-                throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");
-            }
-        }
+                // Validate CVR
+                if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
+                {
+                    throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");
+                }
 
-        await _dbContext.Companies.AddRangeAsync(companies);
-        await _dbContext.SaveChangesAsync();
+                // Validate Email
+                if (string.IsNullOrEmpty(company.Email) || !company.Email.Contains("@"))
+                {
+                    throw new ArgumentException($"Email for company '{company.CompanyName}' must be a valid email address.");
+                }
+
+                // Validate PasswordHash
+                if (string.IsNullOrEmpty(company.PasswordHash))
+                {
+                    throw new ArgumentException($"Password for company '{company.CompanyName}' cannot be empty.");
+                }
+
+                // Hash the password if it's not already hashed
+                if (!company.PasswordHash.StartsWith("$2"))
+                {
+                    company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(company.PasswordHash);
+                }
+
+                // Set a default value for EmailPassword if it's not provided
+                if (string.IsNullOrEmpty(company.EmailPassword))
+                {
+                    company.EmailPassword = "DefaultEmailPassword123"; // You might want to change this default value
+                }
+
+                // Check if company with same email already exists
+                var existingCompany = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == company.Email);
+                if (existingCompany != null)
+                {
+                    throw new ArgumentException($"A company with email '{company.Email}' already exists.");
+                }
+            }
+
+            await _dbContext.Companies.AddRangeAsync(companies);
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError($"Database error while creating companies: {ex.Message}");
+            _logger.LogError($"Inner exception: {ex.InnerException?.Message}");
+            throw new Exception($"Database error while creating companies: {ex.InnerException?.Message ?? ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error while creating companies: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task GenerateSampleCompaniesAsync()
