@@ -5,18 +5,14 @@ on:
     branches:
       - main
       - develop
-
   pull_request:
     branches:
       - main
       - develop
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
-    env:
-      GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
 
     steps:
       - name: Checkout repository
@@ -32,3 +28,16 @@ jobs:
 
       - name: Build solution
         run: dotnet build --no-restore
+
+      - name: Publish solution
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'aes-backend'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./publish
+        env:
+          GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
