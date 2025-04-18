@@ -35,9 +35,16 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'aes-backend'
+          app-name: 'aes-backend-geaefagrhudkesg9' # Opdater til det korrekte navn, hvis 'aes-backend' var forkert
           slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ./publish
-        env:
-          GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
+
+      - name: Set Connection String in Azure App Service
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name aes-backend \
+              --resource-group appsvc_windows_northeurope \
+              --settings GH_SECRET_CONNECTIONSTRING="${{ secrets.GH_SECRET_CONNECTIONSTRING }}"
