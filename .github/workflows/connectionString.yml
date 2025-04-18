@@ -39,5 +39,17 @@ jobs:
           slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ./publish
-        env:
-          GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Connection String in Azure App Service
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name aes-backend \
+              --resource-group appsvc_windows_northeurope \
+              --settings GH_SECRET_CONNECTIONSTRING="${{ secrets.GH_SECRET_CONNECTIONSTRING }}"
