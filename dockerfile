@@ -2,20 +2,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy solution and project files
-COPY Backend.sln ./
-COPY Backend/Backend.csproj ./Backend/
-
-# Restore
+# Copy only project file and restore
+COPY Backend.csproj ./
 RUN dotnet restore
 
-# Copy everything else
+# Copy the rest of the source code
 COPY . ./
+RUN dotnet publish -c Release -o /out
 
-# Publish to out
-RUN dotnet publish Backend/Backend.csproj -c Release -o /out
-
-# Stage 2: Run
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /out .
