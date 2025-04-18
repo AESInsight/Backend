@@ -98,4 +98,5 @@ using (var scope = app.Services.CreateScope())
     // Optionally, call a method to seed additional data if needed
 }
 
-app.Run(); // Run the application
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Run($"http://0.0.0.0:{port}");
