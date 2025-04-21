@@ -47,6 +47,7 @@ public class CompanyService : ICompanyService
         }
 
         existingCompany.CompanyName = company.CompanyName;
+        existingCompany.Industry = company.Industry;
         existingCompany.CVR = company.CVR;
         existingCompany.Email = company.Email;
 
@@ -139,6 +140,7 @@ public class CompanyService : ICompanyService
             sampleCompanies.Add(new CompanyModel
             {
                 CompanyName = $"Company {i}",
+                Industry = $"Industry {i}",
                 CVR = random.Next(10000000, 99999999).ToString(),
                 Email = $"company{i}@example.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123")

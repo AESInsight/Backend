@@ -82,6 +82,7 @@ public class CompanyController : ControllerBase
             var companies = companyDTOs.Select(dto => new CompanyModel
             {
                 CompanyName = dto.CompanyName,
+                Industry = dto.Industry,
                 CVR = dto.CVR,
                 Email = dto.Email,
                 PasswordHash = dto.PasswordHash 
