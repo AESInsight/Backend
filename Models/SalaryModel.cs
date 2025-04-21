@@ -13,6 +13,6 @@ namespace Backend.Models
 
         public double Salary { get; set; } // Salary value
 
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow; // When salary was recorded
+        public DateTime Timestamp { get; set; } // When salary was recorded
     }
 }
