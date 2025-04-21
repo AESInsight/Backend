@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 using Backend.Data;
-using Microsoft.EntityFrameworkCore;
 using Backend.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers;
 
@@ -22,7 +20,6 @@ public class EmployeeController : ControllerBase
         _dbContext = dbContext;
     }
 
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetEmployeeById(int id)
     {
@@ -35,12 +32,10 @@ public class EmployeeController : ControllerBase
                 return NotFound(new { error = $"Employee with ID {id} not found" });
             }
 
-            // Map EmployeeModel to EmployeeDto
             var employeeDto = new EmployeeDto
             {
                 EmployeeID = employee.EmployeeID,
                 JobTitle = employee.JobTitle,
-                Salary = employee.Salary,
                 Experience = employee.Experience,
                 Gender = employee.Gender,
                 CompanyID = employee.CompanyID
@@ -69,7 +64,6 @@ public class EmployeeController : ControllerBase
                 {
                     EmployeeID = e.EmployeeID,
                     JobTitle = e.JobTitle,
-                    Salary = e.Salary,
                     Experience = e.Experience,
                     Gender = e.Gender,
                     CompanyID = e.CompanyID
@@ -90,7 +84,6 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("add")]
-    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> BulkUploadEmployees([FromBody] List<EmployeeModel> employees)
     {
         try
@@ -100,36 +93,27 @@ public class EmployeeController : ControllerBase
                 return BadRequest("No employees provided");
             }
 
-            // Find the highest existing EmployeeID
             var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
-
-            // Generate unique EmployeeIDs for the new employees
             int currentId = maxEmployeeId + 1;
+
             foreach (var employee in employees)
             {
-                if (employee.CompanyID <= 0)
+                if (employee.CompanyID <= 0 || string.IsNullOrEmpty(employee.JobTitle) || string.IsNullOrEmpty(employee.Gender))
                 {
-                    return BadRequest($"Invalid employee data: CompanyID {employee.CompanyID} is invalid");
+                    return BadRequest("Invalid employee data");
                 }
 
-                if (string.IsNullOrEmpty(employee.JobTitle) || string.IsNullOrEmpty(employee.Gender))
+                if (employee.Experience < 0)
                 {
-                    return BadRequest($"Invalid employee data: Missing required fields");
+                    return BadRequest("Invalid employee data: Experience must be >= 0");
                 }
 
-                if (employee.Salary < 0 || employee.Experience < 0)
-                {
-                    return BadRequest($"Invalid employee data: Invalid salary or experience values");
-                }
-
-                // Assign a new EmployeeID if it is not provided
                 if (employee.EmployeeID <= 0)
                 {
                     employee.EmployeeID = currentId++;
                 }
             }
 
-            // Process the bulk upload
             var result = await _employeeService.BulkCreateEmployeesAsync(employees);
 
             return Ok(new
@@ -145,7 +129,6 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPut("update/{id}")]
-    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeeModel updatedEmployee)
     {
         try
@@ -160,9 +143,9 @@ public class EmployeeController : ControllerBase
                 return BadRequest("Invalid employee data: Missing required fields or invalid CompanyID");
             }
 
-            if (updatedEmployee.Salary < 0 || updatedEmployee.Experience < 0)
+            if (updatedEmployee.Experience < 0)
             {
-                return BadRequest("Invalid employee data: Invalid salary or experience values");
+                return BadRequest("Invalid employee data: Experience must be >= 0");
             }
 
             updatedEmployee.EmployeeID = id;
@@ -182,7 +165,6 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteEmployee(int id)
     {
         try
@@ -198,7 +180,6 @@ public class EmployeeController : ControllerBase
                 return NotFound(new { error = $"Employee with ID {id} not found" });
             }
 
-            // Call the correct method to delete the employee by ID
             await _employeeService.DeleteEmployeeAsync(id);
 
             return Ok(new { message = "Employee deleted successfully" });
@@ -247,7 +228,6 @@ public class EmployeeController : ControllerBase
                 {
                     EmployeeID = maxEmployeeId + i,
                     JobTitle = GetRandomJobTitle(random),
-                    Salary = random.Next(30000, 120000),
                     Experience = random.Next(0, 30),
                     Gender = random.Next(0, 2) == 0 ? "Male" : "Female",
                     CompanyID = random.Next(1, 4)
@@ -293,7 +273,6 @@ public class EmployeeController : ControllerBase
                 {
                     EmployeeID = e.EmployeeID,
                     JobTitle = e.JobTitle,
-                    Salary = e.Salary,
                     Experience = e.Experience,
                     Gender = e.Gender,
                     CompanyID = e.CompanyID

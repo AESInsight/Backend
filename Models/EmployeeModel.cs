@@ -11,8 +11,6 @@ public class EmployeeModel
 
     public string? JobTitle { get; set; } // Job title of the employee
 
-    public double Salary { get; set; } // Salary of the employee
-
     public int Experience { get; set; } // Years of experience of the employee
 
     public string? Gender { get; set; } // Gender of the employee

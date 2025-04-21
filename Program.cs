@@ -28,6 +28,7 @@ builder.Services.AddControllers(); // Add support for controllers
 builder.Services.AddScoped<IEmployeeService, EmployeeService>(); // Register EmployeeService
 builder.Services.AddScoped<ICompanyService, CompanyService>(); // Register CompanyService
 builder.Services.AddScoped<IEmailService, EmailService>(); // Register EmailService
+builder.Services.AddScoped<ISalaryService, SalaryService>(); // Register SalaryService
 
 builder.Services.AddSwaggerGen(c =>
 {
