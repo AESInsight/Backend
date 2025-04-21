@@ -17,6 +17,9 @@ public class ApplicationDbContext : DbContext
     // DbSet for CompanyModel
     public DbSet<CompanyModel> Companies { get; set; }
 
+    // DbSet for SalaryModel
+    public DbSet<SalaryModel> Salaries { get; set; }
+
     public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
