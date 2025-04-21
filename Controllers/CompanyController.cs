@@ -27,9 +27,10 @@ public class CompanyController : ControllerBase
             {
                 CompanyID = c.CompanyID,
                 CompanyName = c.CompanyName,
+                Industry = c.Industry,
                 CVR = c.CVR,
                 Email = c.Email,
-                PasswordHash = c.PasswordHash // Include PasswordHash in the mapping
+                PasswordHash = c.PasswordHash
             }).ToList();
 
             return Ok(companyDTOs);
@@ -51,9 +52,10 @@ public class CompanyController : ControllerBase
             {
                 CompanyID = company.CompanyID,
                 CompanyName = company.CompanyName,
+                Industry = company.Industry,
                 CVR = company.CVR,
                 Email = company.Email,
-                PasswordHash = company.PasswordHash // Include PasswordHash in the mapping
+                PasswordHash = company.PasswordHash
             };
 
             return Ok(companyDTO);
@@ -173,6 +175,40 @@ public class CompanyController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while deleting all companies", details = ex.Message });
+        }
+    }
+
+    [HttpGet("getAllIndustries")]
+    public async Task<IActionResult> GetAllIndustries()
+    {
+        try
+        {
+            var industries = await _companyService.GetAllIndustriesAsync();
+            return Ok(industries);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving industries", details = ex.Message });
+        }
+    }
+
+    [HttpGet("getAverageSalaryForJobsIn{industry}")]
+    public async Task<IActionResult> GetAverageSalariesForJobsInIndustry(string industry)
+    {
+        try
+        {
+            var jobTitleAverages = await _companyService.GetAverageSalariesForJobsInIndustryAsync(industry);
+            
+            if (!jobTitleAverages.Any())
+            {
+                return NotFound(new { message = $"No companies found in the {industry} industry" });
+            }
+
+            return Ok(jobTitleAverages);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving salary averages", details = ex.Message });
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Backend.Models.DTO;
 
 namespace Backend.Services;
 
@@ -164,5 +165,68 @@ public class CompanyService : ICompanyService
         }
 
         return BCrypt.Net.BCrypt.Verify(password, company.PasswordHash);
+    }
+
+    public async Task<List<string>> GetAllIndustriesAsync()
+    {
+        return await _dbContext.Companies
+            .Select(c => c.Industry)
+            .Distinct()
+            .OrderBy(i => i)
+            .ToListAsync();
+    }
+
+    public async Task<List<JobTitleSalaryDTO>> GetAverageSalariesForJobsInIndustryAsync(string industry)
+    {
+        // First get all companies in the specified industry
+        var companyIds = await _dbContext.Companies
+            .Where(c => c.Industry == industry)
+            .Select(c => c.CompanyID)
+            .ToListAsync();
+
+        if (!companyIds.Any())
+        {
+            return new List<JobTitleSalaryDTO>();
+        }
+
+        // Get all employees from these companies with their latest salaries
+        var employeesWithSalaries = await _dbContext.Employee
+            .Where(e => companyIds.Contains(e.CompanyID))
+            .Select(e => new
+            {
+                e.EmployeeID,
+                e.JobTitle,
+                e.Gender,
+                LatestSalary = _dbContext.Salaries
+                    .Where(s => s.EmployeeID == e.EmployeeID)
+                    .OrderByDescending(s => s.Timestamp)
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
+
+        // Group by job title
+        var result = employeesWithSalaries
+            .GroupBy(e => e.JobTitle ?? "Unknown")
+            .Select(g => new JobTitleSalaryDTO
+            {
+                JobTitle = g.Key,
+                GenderData = g
+                    .GroupBy(e => e.Gender ?? "Unknown")
+                    .ToDictionary(
+                        genderGroup => genderGroup.Key,
+                        genderGroup => new GenderSalaryData
+                        {
+                            EmployeeCount = genderGroup.Count(),
+                            AverageSalary = genderGroup
+                                .Where(e => e.LatestSalary != null)
+                                .Select(e => e.LatestSalary.Salary)
+                                .DefaultIfEmpty()
+                                .Average()
+                        }
+                    )
+            })
+            .ToList();
+
+        return result;
     }
 }
