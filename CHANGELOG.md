@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/AESInsight/Backend/compare/v1.5.2...v1.6.0) (2025-04-21)
+
+
+### Bug Fixes
+
+* issue with timestamp ([e9f10c3](https://github.com/AESInsight/Backend/commit/e9f10c31f46d22d8fd22c02e7b489848f7842c4c))
+* removes salary from emp dto ([d162195](https://github.com/AESInsight/Backend/commit/d162195589f54296562e182b8e718361cd18afaa))
+
+
+### Features
+
+* adds migration for salary ([6fafc59](https://github.com/AESInsight/Backend/commit/6fafc59e80f205163a09c2d4d50cfea6deb03f31))
+
 ## [1.5.2](https://github.com/AESInsight/Backend/compare/v1.5.1...v1.5.2) (2025-04-11)
 
 
