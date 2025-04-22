@@ -219,7 +219,7 @@ public class CompanyService : ICompanyService
                             EmployeeCount = genderGroup.Count(),
                             AverageSalary = genderGroup
                                 .Where(e => e.LatestSalary != null)
-                                .Select(e => e.LatestSalary.Salary)
+                                .Select(e => e.LatestSalary?.Salary ?? 0)
                                 .DefaultIfEmpty()
                                 .Average()
                         }
