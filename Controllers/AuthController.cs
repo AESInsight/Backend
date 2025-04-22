@@ -82,7 +82,7 @@ namespace Backend.Controllers
                         Username = request.Username,
                         PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                         PasswordSalt = hmac.Key,
-                        Role = "Company" // Special role for company users
+                        Role = "Company"
                     };
 
                     _context.Users.Add(user);
