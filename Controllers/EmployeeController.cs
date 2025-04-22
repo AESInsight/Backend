@@ -292,4 +292,84 @@ public class EmployeeController : ControllerBase
             return BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
         }
     }
+
+    [HttpGet("getAllJobTitles")]
+    public async Task<IActionResult> GetAllJobTitles()
+    {
+        try
+        {
+            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+            
+            if (!jobTitles.Any())
+            {
+                return NotFound(new { message = "No job titles found" });
+            }
+
+            return Ok(new { jobTitles = jobTitles });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving job titles", details = ex.Message });
+        }
+    }
+
+    [HttpGet("getAllEmployeesBy/{jobTitle}")]
+    public async Task<IActionResult> GetEmployeesByJobTitle(string jobTitle)
+    {
+        try
+        {
+            var employees = await _employeeService.GetEmployeesByJobTitleAsync(jobTitle);
+            
+            if (!employees.Any())
+            {
+                return NotFound(new { message = $"No employees found with job title: {jobTitle}" });
+            }
+
+            return Ok(employees);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+        }
+    }
+
+    [HttpGet("getSalaryDifferences/{jobTitle}")]
+    public async Task<IActionResult> GetSalaryDifferencesByGender(string jobTitle)
+    {
+        try
+        {
+            var salaryDifferences = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
+            
+            if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
+            {
+                return NotFound(new { message = $"No salary data found for job title: {jobTitle}" });
+            }
+
+            return Ok(salaryDifferences);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
+        }
+    }
+
+    [HttpGet("getAllSalaryDifferences")]
+    public async Task<IActionResult> GetAllSalaryDifferencesByGender()
+    {
+        try
+        {
+            var salaryDifferences = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
+            
+            if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
+            {
+                return NotFound(new { message = "No salary data found" });
+            }
+
+            return Ok(salaryDifferences);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
+        }
+    }
 }

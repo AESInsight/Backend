@@ -1,4 +1,5 @@
 using Backend.Models;
+using Backend.Models.DTO;
 
 namespace Backend.Services;
 
@@ -13,4 +14,6 @@ public interface ICompanyService
     Task GenerateSampleCompaniesAsync(); // Generate sample companies
     Task<CompanyModel?> GetCompanyByEmailAsync(string email);
     Task<bool> VerifyPasswordAsync(string email, string password);
+    Task<List<string>> GetAllIndustriesAsync(); // Get all unique industries
+    Task<List<JobTitleSalaryDTO>> GetAverageSalariesForJobsInIndustryAsync(string industry);
 }

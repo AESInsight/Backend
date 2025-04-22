@@ -16,7 +16,12 @@ namespace Backend.Extensions
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                options.UseMySql(connectionString, 
+                    ServerVersion.AutoDetect(connectionString),
+                    mysqlOptions => 
+                    {
+                        mysqlOptions.CommandTimeout(120); // Increase timeout to 120 seconds
+                    });
             });
 
             return services;

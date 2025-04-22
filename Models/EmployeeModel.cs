@@ -19,4 +19,6 @@ public class EmployeeModel
 
     [ForeignKey("CompanyID")]
     public CompanyModel? Company { get; set; } // Navigation property for the related Company
+
+    public ICollection<SalaryModel> Salaries { get; set; } = new List<SalaryModel>();
 }
