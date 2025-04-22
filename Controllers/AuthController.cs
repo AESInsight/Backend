@@ -61,9 +61,13 @@ namespace Backend.Controllers
 
             if (request.IsCompany)
             {
+                // Get the next available CompanyID
+                var maxCompanyId = await _context.Companies.MaxAsync(c => (int?)c.CompanyID) ?? 0;
+                
                 // Create company
                 var company = new CompanyModel
                 {
+                    CompanyID = maxCompanyId + 1,
                     CompanyName = request.CompanyName,
                     Industry = request.Industry,
                     CVR = request.CVR,
@@ -74,15 +78,19 @@ namespace Backend.Controllers
                 _context.Companies.Add(company);
                 await _context.SaveChangesAsync();
 
+                // Get the next available UserId
+                var maxUserId = await _context.Users.MaxAsync(u => (int?)u.UserId) ?? 0;
+
                 // Also create a user account for the company
                 using (var hmac = new System.Security.Cryptography.HMACSHA512())
                 {
                     var user = new User
                     {
+                        UserId = maxUserId + 1,
                         Username = request.Username,
                         PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                         PasswordSalt = hmac.Key,
-                        Role = "Company"
+                        Role = "Company" // Special role for company users
                     };
 
                     _context.Users.Add(user);
@@ -93,11 +101,15 @@ namespace Backend.Controllers
             }
             else
             {
+                // Get the next available UserId
+                var maxUserId = await _context.Users.MaxAsync(u => (int?)u.UserId) ?? 0;
+
                 // Create user
                 using (var hmac = new System.Security.Cryptography.HMACSHA512())
                 {
                     var user = new User
                     {
+                        UserId = maxUserId + 1,
                         Username = request.Username,
                         PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                         PasswordSalt = hmac.Key,
