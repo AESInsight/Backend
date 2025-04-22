@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 
 namespace Backend.Controllers
 {
@@ -25,43 +26,90 @@ namespace Backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            // First try to find a user
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
-            if (user == null || !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+            if (user != null && VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
-                Console.WriteLine("Unauthorized login attempt");
-                return Unauthorized();
+                var token = GenerateJwtToken(user.Username, user.Role);
+                return Ok(new { Token = token });
             }
 
-            var token = GenerateJwtToken(user.Username, user.Role);
-            Console.WriteLine($"Generated token for {user.Username}: {token}");
-            return Ok(new { Token = token });
+            // If no user found, try to find a company
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.Email == request.Username);
+
+            if (company != null && BCrypt.Net.BCrypt.Verify(request.Password, company.PasswordHash))
+            {
+                var token = GenerateJwtToken(company.Email, "Company");
+                return Ok(new { Token = token });
+            }
+
+            return Unauthorized();
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+            // Check if username/email already exists in either users or companies
+            if (await _context.Users.AnyAsync(u => u.Username == request.Username) ||
+                await _context.Companies.AnyAsync(c => c.Email == request.Username))
             {
-                return BadRequest(new { message = "Username already exists" });
+                return BadRequest(new { message = "Username/Email already exists" });
             }
 
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
+            if (request.IsCompany)
             {
-                var user = new User
+                // Create company
+                var company = new CompanyModel
                 {
-                    Username = request.Username,
-                    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
-                    PasswordSalt = hmac.Key,
-                    Role = request.Role
+                    CompanyName = request.CompanyName,
+                    Industry = request.Industry,
+                    CVR = request.CVR,
+                    Email = request.Username,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
                 };
 
-                _context.Users.Add(user);
+                _context.Companies.Add(company);
                 await _context.SaveChangesAsync();
-            }
 
-            return Ok(new { message = "User registered successfully" });
+                // Also create a user account for the company
+                using (var hmac = new System.Security.Cryptography.HMACSHA512())
+                {
+                    var user = new User
+                    {
+                        Username = request.Username,
+                        PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
+                        PasswordSalt = hmac.Key,
+                        Role = "Company" // Special role for company users
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { message = "Company registered successfully" });
+            }
+            else
+            {
+                // Create user
+                using (var hmac = new System.Security.Cryptography.HMACSHA512())
+                {
+                    var user = new User
+                    {
+                        Username = request.Username,
+                        PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
+                        PasswordSalt = hmac.Key,
+                        Role = request.Role
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { message = "User registered successfully" });
+            }
         }
 
         private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
@@ -81,7 +129,7 @@ namespace Backend.Controllers
         private string GenerateJwtToken(string username, string role)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var keyString = jwtSettings["Key"] ?? "DefaultSecretKey"; // Provide a default key
+            var keyString = jwtSettings["Key"] ?? "DefaultSecretKey";
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -117,5 +165,9 @@ namespace Backend.Controllers
         public string Username { get; set; } = null!;
         public string Password { get; set; } = null!;
         public string Role { get; set; } = "User";
+        public bool IsCompany { get; set; }
+        public string? CompanyName { get; set; }
+        public string? Industry { get; set; }
+        public string? CVR { get; set; }
     }
 }
