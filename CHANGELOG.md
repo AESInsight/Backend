@@ -1,3 +1,11 @@
+## [1.8.1](https://github.com/AESInsight/Backend/compare/v1.8.0...v1.8.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* Fixes infinitely increasing ID's, so they'll continue from highest existing number instead. ([3213374](https://github.com/AESInsight/Backend/commit/32133740775d365d0e20447e1575a048fa5c8576))
+* Fixes the auth/login controller ([e229787](https://github.com/AESInsight/Backend/commit/e229787303c86dd7a8335d4364981bab5509a2d8))
+
 # [1.8.0](https://github.com/AESInsight/Backend/compare/v1.7.0...v1.8.0) (2025-04-22)
 
 
