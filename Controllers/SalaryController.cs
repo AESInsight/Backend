@@ -81,4 +81,20 @@ public class SalaryController : ControllerBase
 
         return Ok(salaryHistory);
     }
+        // GET: api/salary/all
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllSalaries()
+    {
+        var salaries = await _dbContext.Salaries
+            .Select(s => new
+            {
+                s.SalaryID,
+                s.EmployeeID,
+                s.Salary,
+                s.Timestamp
+            })
+            .ToListAsync();
+
+        return Ok(salaries);
+    }
 }
