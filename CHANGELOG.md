@@ -1,3 +1,11 @@
+# [1.7.0](https://github.com/AESInsight/Backend/compare/v1.6.0...v1.7.0) (2025-04-22)
+
+
+### Features
+
+* adds endpoints to fetch data for chart 2 - its now possible to fetch all industries, the and the average salary for eaach jobtitlte in that industry based on gender ([141a0d7](https://github.com/AESInsight/Backend/commit/141a0d7a072589848b6644f0293e8524168acb08))
+* setup of querys for chart 1, we can now fetch average salary for gender overtime and average salary for gender by jobtitle ([cb21069](https://github.com/AESInsight/Backend/commit/cb210696b25136c93389c602307468ecaa6eae27))
+
 # [1.6.0](https://github.com/AESInsight/Backend/compare/v1.5.2...v1.6.0) (2025-04-21)
 
 
