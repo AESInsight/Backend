@@ -26,4 +26,4 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Publish Web API
-        run: dotnet publish ./Backend.csproj --no-build --configuration Release -o ./publish
+        run: dotnet publish ./WebAPI.csproj --no-build --configuration Release -o ./publish
