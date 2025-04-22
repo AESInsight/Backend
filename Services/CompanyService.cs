@@ -81,6 +81,10 @@ public class CompanyService : ICompanyService
     {
         try
         {
+            // Get the next available CompanyID
+            var maxId = await _dbContext.Companies.MaxAsync(c => (int?)c.CompanyID) ?? 0;
+            var nextId = maxId + 1;
+
             foreach (var company in companies)
             {
                 if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
@@ -110,9 +114,7 @@ public class CompanyService : ICompanyService
                 }
 
                 // Assign the next available ID
-                var maxId = await _dbContext.Companies.MaxAsync(c => (int?)c.CompanyID) ?? 0;
-                company.CompanyID = maxId + 1;
-
+                company.CompanyID = nextId++;
                 _dbContext.Companies.Add(company);
             }
 

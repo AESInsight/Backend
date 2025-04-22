@@ -7,6 +7,7 @@ using System.Text; // For Encoding
 using Microsoft.AspNetCore.Authentication.JwtBearer; // For JwtBearerDefaults
 using Microsoft.IdentityModel.Tokens; // For TokenValidationParameters and SymmetricSecurityKey
 using Microsoft.OpenApi.Models; // For OpenApiInfo, OpenApiSecurityScheme, etc.
+using Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Indtast 'Bearer' efterfulgt af dit token i tekstfeltet. Eksempel: 'Bearer abc123'"
+        Description = "Enter 'Bearer' followed by your token. Example: 'Bearer abc123'"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -97,6 +98,20 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate(); // Apply pending migrations to the database
     // Optionally, call a method to seed additional data if needed
+
+    // Query company with ID 4
+    var company = await dbContext.Companies.FindAsync(4);
+    if (company != null)
+    {
+        Console.WriteLine($"Company ID: {company.CompanyID}");
+        Console.WriteLine($"Company Name: {company.CompanyName}");
+        Console.WriteLine($"Email: {company.Email}");
+        Console.WriteLine($"Password Hash: {company.PasswordHash}");
+    }
+    else
+    {
+        Console.WriteLine("Company with ID 4 not found");
+    }
 }
 
 app.Run(); // Run the application
