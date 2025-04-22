@@ -1,3 +1,15 @@
+# [1.8.0](https://github.com/AESInsight/Backend/compare/v1.7.0...v1.8.0) (2025-04-22)
+
+
+### Bug Fixes
+
+* change EmployeeModel ([4546e0e](https://github.com/AESInsight/Backend/commit/4546e0ea19b6bc8c237eb2a1e97b2fa5cdd0c644))
+
+
+### Features
+
+* Adds all salary ([b6fd5df](https://github.com/AESInsight/Backend/commit/b6fd5dfba29e5cccb564005adf5470828c5c671e))
+
 # [1.7.0](https://github.com/AESInsight/Backend/compare/v1.6.0...v1.7.0) (2025-04-22)
 
 
