@@ -174,6 +174,24 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public void UpdateCompanyAsync_ThrowsExceptionForInvalidCVR()
+        {
+            // Arrange
+            var invalidCompany = new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Invalid Company",
+                CVR = "1234", // Invalid CVR (too short)
+                Email = "invalid@example.com",
+                Industry = "Tech",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("password")
+            };
+
+            // Act & Assert
+            Assert.ThrowsAsync<ArgumentException>(async () => await _companyService.UpdateCompanyAsync(invalidCompany));
+        }
+
+        [Test]
         public async Task GetAllIndustriesAsync_ReturnsUniqueIndustries()
         {
             // Act
