@@ -69,9 +69,9 @@ namespace Backend.Controllers
                 var company = new CompanyModel
                 {
                     CompanyID = maxCompanyId + 1,
-                    CompanyName = request.CompanyName,
-                    Industry = request.Industry,
-                    CVR = request.CVR,
+                    CompanyName = request.CompanyName ?? "Default Company Name",
+                    Industry = request.Industry ?? "Default Industry",
+                    CVR = request.CVR ?? "Default CVR",
                     Email = request.Username,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
                 };
