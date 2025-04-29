@@ -3,6 +3,7 @@ using Backend.Models;
 using Backend.Services;
 using Backend.Data;
 using Backend.Models.DTOs;
+using Backend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers;
@@ -378,6 +379,11 @@ public class EmployeeController : ControllerBase
     {
         try
         {
+            if (id <= 0)
+            {
+                return BadRequest(new { error = "Invalid employee ID" });
+            }
+
             var employee = await _dbContext.Employee
                 .Include(e => e.Company)
                 .FirstOrDefaultAsync(e => e.EmployeeID == id);
@@ -387,7 +393,12 @@ public class EmployeeController : ControllerBase
                 return NotFound(new { error = $"Employee with ID {id} not found" });
             }
 
-            var employeeIndustryDto = new
+            if (employee.Company == null)
+            {
+                return NotFound(new { error = $"Company information not found for employee with ID {id}" });
+            }
+
+            var employeeIndustryDto = new EmployeeIndustryDto
             {
                 EmployeeID = employee.EmployeeID,
                 JobTitle = employee.JobTitle,
