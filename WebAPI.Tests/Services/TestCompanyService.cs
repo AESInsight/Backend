@@ -6,6 +6,8 @@ using Backend.Services;
 using Backend.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Services
 {
@@ -83,6 +85,28 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public async Task GetCompanyByEmailAsync_ReturnsCorrectCompany()
+        {
+            // Act
+            var result = await _companyService.GetCompanyByEmailAsync("a@example.com");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.CompanyName, Is.EqualTo("Company A"));
+            Assert.That(result.CVR, Is.EqualTo("12345678"));
+        }
+
+        [Test]
+        public async Task GetCompanyByEmailAsync_ReturnsNullForNonExistentEmail()
+        {
+            // Act
+            var result = await _companyService.GetCompanyByEmailAsync("nonexistent@example.com");
+
+            // Assert
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
         public async Task VerifyPasswordAsync_ReturnsTrueForValidPassword()
         {
             // Act
@@ -100,6 +124,110 @@ namespace WebAPI.Tests.Services
 
             // Assert
             Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task DeleteCompanyAsync_RemovesCompany()
+        {
+            // Act
+            await _companyService.DeleteCompanyAsync(1);
+            var companies = await _companyService.GetAllCompaniesAsync();
+
+            // Assert
+            Assert.That(companies.Any(c => c.CompanyID == 1), Is.False); // Ensure the company is no longer in the list
+        }
+
+        [Test]
+        public async Task DeleteCompanyAsync_DoesNothingForNonExistentCompany()
+        {
+            // Act
+            await _companyService.DeleteCompanyAsync(999); // Non-existent ID
+
+            // Assert
+            var companies = await _companyService.GetAllCompaniesAsync();
+            Assert.That(companies.Count, Is.EqualTo(2)); // Ensure no companies were removed
+        }
+
+        [Test]
+        public async Task UpdateCompanyAsync_UpdatesCompanyDetails()
+        {
+            // Arrange
+            var updatedCompany = new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Updated Company A",
+                CVR = "87654321",
+                Email = "updated@example.com",
+                Industry = "Updated Industry",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("updatedpassword")
+            };
+
+            // Act
+            await _companyService.UpdateCompanyAsync(updatedCompany);
+            var result = await _companyService.GetCompanyByIdAsync(1);
+
+            // Assert
+            Assert.That(result.CompanyName, Is.EqualTo("Updated Company A"));
+            Assert.That(result.CVR, Is.EqualTo("87654321"));
+            Assert.That(result.Email, Is.EqualTo("updated@example.com"));
+            Assert.That(result.Industry, Is.EqualTo("Updated Industry"));
+        }
+
+        [Test]
+        public async Task GetAllIndustriesAsync_ReturnsUniqueIndustries()
+        {
+            // Act
+            var industries = await _companyService.GetAllIndustriesAsync();
+
+            // Assert
+            Assert.That(industries.Count, Is.EqualTo(2));
+            Assert.That(industries, Does.Contain("Tech"));
+            Assert.That(industries, Does.Contain("Finance"));
+        }
+
+        [Test]
+        public async Task CreateCompaniesAsync_AddsNewCompanies()
+        {
+            // Arrange
+            var newCompanies = new List<CompanyModel>
+            {
+                new CompanyModel
+                {
+                    CompanyName = "Company C",
+                    CVR = "11223344",
+                    Email = "c@example.com",
+                    Industry = "Healthcare",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password3")
+                },
+                new CompanyModel
+                {
+                    CompanyName = "Company D",
+                    CVR = "55667788",
+                    Email = "d@example.com",
+                    Industry = "Retail",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password4")
+                }
+            };
+
+            // Act
+            await _companyService.CreateCompaniesAsync(newCompanies);
+            var companies = await _companyService.GetAllCompaniesAsync();
+
+            // Assert
+            Assert.That(companies.Count, Is.EqualTo(4)); // 2 existing + 2 new
+            Assert.That(companies.Any(c => c.CompanyName == "Company C"), Is.True);
+            Assert.That(companies.Any(c => c.CompanyName == "Company D"), Is.True);
+        }
+
+        [Test]
+        public async Task DeleteAllCompaniesAsync_RemovesAllCompanies()
+        {
+            // Act
+            await _companyService.DeleteAllCompaniesAsync();
+            var companies = await _companyService.GetAllCompaniesAsync();
+
+            // Assert
+            Assert.That(companies.Count, Is.EqualTo(0));
         }
     }
 }
