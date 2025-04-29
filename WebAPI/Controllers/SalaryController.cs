@@ -26,7 +26,12 @@ public class SalaryController : ControllerBase
             return BadRequest("Invalid salary or EmployeeID.");
         }
 
-        salary.Timestamp = DateTime.UtcNow;
+        // If no Timestamp is provided, set it to the current time
+        if (salary.Timestamp == default)
+        {
+            salary.Timestamp = DateTime.UtcNow;
+        }
+
         _dbContext.Salaries.Add(salary);
         await _dbContext.SaveChangesAsync();
 
