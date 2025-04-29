@@ -6,8 +6,6 @@ using Backend.Services;
 using Backend.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Services
 {
@@ -20,9 +18,9 @@ namespace WebAPI.Tests.Services
         [SetUp]
         public void SetUp()
         {
-            // Use an InMemoryDatabase for testing
+            // Use a unique InMemoryDatabase for each test
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             var dbContext = new ApplicationDbContext(options);
@@ -37,7 +35,7 @@ namespace WebAPI.Tests.Services
                     CVR = "12345678", 
                     Email = "a@example.com", 
                     Industry = "Tech", 
-                    PasswordHash = "hashedpassword1" 
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password1")
                 },
                 new CompanyModel 
                 { 
@@ -46,7 +44,7 @@ namespace WebAPI.Tests.Services
                     CVR = "87654321", 
                     Email = "b@example.com", 
                     Industry = "Finance", 
-                    PasswordHash = "hashedpassword2" 
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password2")
                 }
             });
             dbContext.SaveChanges();
@@ -68,8 +66,40 @@ namespace WebAPI.Tests.Services
             Assert.That(result.Count, Is.EqualTo(2));
             Assert.That(result[0].CompanyName, Is.EqualTo("Company A"));
             Assert.That(result[1].CompanyName, Is.EqualTo("Company B"));
-            Assert.That(result[0].PasswordHash, Is.EqualTo("hashedpassword1"));
-            Assert.That(result[1].PasswordHash, Is.EqualTo("hashedpassword2"));
+            Assert.That(result[0].CVR, Is.EqualTo("12345678"));
+            Assert.That(result[1].CVR, Is.EqualTo("87654321"));
+        }
+
+        [Test]
+        public async Task GetCompanyByIdAsync_ReturnsCorrectCompany()
+        {
+            // Act
+            var result = await _companyService.GetCompanyByIdAsync(1);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.CompanyName, Is.EqualTo("Company A"));
+            Assert.That(result.CVR, Is.EqualTo("12345678"));
+        }
+
+        [Test]
+        public async Task VerifyPasswordAsync_ReturnsTrueForValidPassword()
+        {
+            // Act
+            var result = await _companyService.VerifyPasswordAsync("a@example.com", "password1");
+
+            // Assert
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public async Task VerifyPasswordAsync_ReturnsFalseForInvalidPassword()
+        {
+            // Act
+            var result = await _companyService.VerifyPasswordAsync("a@example.com", "wrongpassword");
+
+            // Assert
+            Assert.That(result, Is.False);
         }
     }
 }
