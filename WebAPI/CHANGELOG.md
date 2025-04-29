@@ -1,3 +1,25 @@
+# [1.9.0](https://github.com/AESInsight/Backend/compare/v1.8.1...v1.9.0) (2025-04-29)
+
+
+### Bug Fixes
+
+* rename CI path ([5575058](https://github.com/AESInsight/Backend/commit/55750588079d08afd955a926c6bd56ee4101dc23))
+* Renames project reference in CI ([967b3a8](https://github.com/AESInsight/Backend/commit/967b3a84a9ca738a34015d3be52bae94d019ab30))
+* renames sln file ([a06889b](https://github.com/AESInsight/Backend/commit/a06889b500b2cad9698e8648c0d5b9119d3add86))
+
+
+### Features
+
+* death commit ([3451553](https://github.com/AESInsight/Backend/commit/34515534cf56f75583219b96691f7205f573c784))
+
+## [1.8.1](https://github.com/AESInsight/Backend/compare/v1.8.0...v1.8.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* Fixes infinitely increasing ID's, so they'll continue from highest existing number instead. ([3213374](https://github.com/AESInsight/Backend/commit/32133740775d365d0e20447e1575a048fa5c8576))
+* Fixes the auth/login controller ([e229787](https://github.com/AESInsight/Backend/commit/e229787303c86dd7a8335d4364981bab5509a2d8))
+
 # [1.8.0](https://github.com/AESInsight/Backend/compare/v1.7.0...v1.8.0) (2025-04-22)
 
 

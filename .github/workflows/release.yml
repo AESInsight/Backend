@@ -26,8 +26,10 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working-directory: ./WebAPI
 
       - name: Run semantic-release
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: bunx semantic-release
+        working-directory: ./WebAPI

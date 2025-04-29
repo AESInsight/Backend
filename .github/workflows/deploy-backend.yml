@@ -19,13 +19,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./Backend.csproj
+        run: dotnet restore ./WebAPI/Backend.csproj
 
       - name: Build the project
-        run: dotnet build ./Backend.csproj --configuration Release
+        run: dotnet build ./WebAPI/Backend.csproj --configuration Release
 
       - name: Publish the project
-        run: dotnet publish ./Backend.csproj --configuration Release --output ./publish
+        run: dotnet publish ./WebAPI/Backend.csproj --configuration Release --output ./WebAPI/publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
@@ -33,4 +33,4 @@ jobs:
           app-name: aes-backend     
           slot-name: Production
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: ./publish
+          package: ./WebAPI/publish

@@ -4,6 +4,8 @@ using Backend.Models;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Backend.Controllers;
 
@@ -32,8 +34,11 @@ public class PasswordResetController : ControllerBase
     [HttpPost("request-reset")]
     public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
     {
+        // Check if email exists in either users or companies
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
         var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == request.Email);
-        if (company == null)
+
+        if (user == null && company == null)
         {
             return Ok(new { message = "If your email is registered, you will receive a password reset link." });
         }
@@ -65,24 +70,55 @@ public class PasswordResetController : ControllerBase
             return BadRequest(new { message = "Token has expired. Please request a new password reset." });
         }
 
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == tokenInfo.Email);
-        if (company == null)
+        // Try to find user first
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == tokenInfo.Email);
+        if (user != null)
         {
-            return BadRequest(new { message = "Invalid request" });
+            using (var hmac = new HMACSHA512())
+            {
+                user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword));
+                user.PasswordSalt = hmac.Key;
+            }
+            await _dbContext.SaveChangesAsync();
+            _resetTokens.Remove(request.Token);
+            return Ok(new { message = "Password has been reset successfully" });
         }
 
-        company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-        await _dbContext.SaveChangesAsync();
-        _resetTokens.Remove(request.Token);
+        // If no user found, try company
+        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == tokenInfo.Email);
+        if (company != null)
+        {
+            company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            await _dbContext.SaveChangesAsync();
+            _resetTokens.Remove(request.Token);
+            return Ok(new { message = "Password has been reset successfully" });
+        }
 
-        return Ok(new { message = "Password has been reset successfully" });
+        return BadRequest(new { message = "Invalid request" });
     }
 
     [HttpPost("verify")]
     public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordRequest request)
     {
-        var isValid = await _companyService.VerifyPasswordAsync(request.Email, request.Password);
-        return Ok(new { isValid });
+        // Try to find user first
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
+        if (user != null)
+        {
+            using (var hmac = new HMACSHA512(user.PasswordSalt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password));
+                return Ok(new { isValid = computedHash.SequenceEqual(user.PasswordHash) });
+            }
+        }
+
+        // If no user found, try company
+        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == request.Email);
+        if (company != null)
+        {
+            return Ok(new { isValid = BCrypt.Net.BCrypt.Verify(request.Password, company.PasswordHash) });
+        }
+
+        return Ok(new { isValid = false });
     }
 }
 
