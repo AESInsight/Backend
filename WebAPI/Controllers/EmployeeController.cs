@@ -299,7 +299,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var jobTitles = await _employeeService.GetAllJobTitlesAsync();
-            
+
             if (!jobTitles.Any())
             {
                 return NotFound(new { message = "No job titles found" });
@@ -319,7 +319,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var employees = await _employeeService.GetEmployeesByJobTitleAsync(jobTitle);
-            
+
             if (!employees.Any())
             {
                 return NotFound(new { message = $"No employees found with job title: {jobTitle}" });
@@ -339,7 +339,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var salaryDifferences = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
-            
+
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
                 return NotFound(new { message = $"No salary data found for job title: {jobTitle}" });
@@ -359,7 +359,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var salaryDifferences = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
-            
+
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
                 return NotFound(new { message = "No salary data found" });
@@ -370,6 +370,36 @@ public class EmployeeController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
+        }
+    }
+
+    [HttpGet("industry/{id}")]
+    public async Task<IActionResult> GetEmployeeIndustryById(int id)
+    {
+        try
+        {
+            var employee = await _dbContext.Employee
+                .Include(e => e.Company)
+                .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+            if (employee == null)
+            {
+                return NotFound(new { error = $"Employee with ID {id} not found" });
+            }
+
+            var employeeIndustryDto = new
+            {
+                EmployeeID = employee.EmployeeID,
+                JobTitle = employee.JobTitle,
+                CompanyID = employee.CompanyID,
+                Industry = employee.Company.Industry
+            };
+
+            return Ok(employeeIndustryDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving the employee's industry", details = ex.Message });
         }
     }
 }
