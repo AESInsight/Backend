@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/AESInsight/Backend/compare/v1.9.0...v1.9.1) (2025-04-30)
+
+
+### Bug Fixes
+
+* database update ([567dd02](https://github.com/AESInsight/Backend/commit/567dd0237d01ed138777930371309322e805e14f))
+
 # [1.9.0](https://github.com/AESInsight/Backend/compare/v1.8.1...v1.9.0) (2025-04-29)
 
 
