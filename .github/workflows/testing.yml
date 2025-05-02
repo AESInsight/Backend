@@ -26,7 +26,7 @@ jobs:
         run: dotnet new tool-manifest --force
 
       - name: Install JunitXml.TestLogger
-        run: dotnet tool install JunitXml.TestLogger --version 3.0.158
+        run: dotnet tool install JunitXml.TestLogger
 
       - name: Build and run unit tests
         run: |
