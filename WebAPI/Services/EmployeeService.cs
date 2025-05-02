@@ -16,6 +16,11 @@ public class EmployeeService : IEmployeeService
 
     public async Task<List<EmployeeModel>> BulkCreateEmployeesAsync(List<EmployeeModel> employees)
     {
+        if (employees == null)
+        {
+            throw new ArgumentNullException(nameof(employees), "Employee list cannot be null.");
+        }
+
         try
         {
             await _context.Employee.AddRangeAsync(employees);
@@ -30,7 +35,13 @@ public class EmployeeService : IEmployeeService
 
     public async Task DeleteAllEmployeesAsync()
     {
-        _context.Employee.RemoveRange(_context.Employee);
+        var employees = _context.Employee.ToList();
+        if (!employees.Any())
+        {
+            throw new InvalidOperationException("No employees found to delete.");
+        }
+
+        _context.Employee.RemoveRange(employees);
         await _context.SaveChangesAsync();
     }
 
@@ -46,22 +57,38 @@ public class EmployeeService : IEmployeeService
             .FirstOrDefaultAsync(e => e.EmployeeID == id);
 
         if (employee == null)
-            throw new KeyNotFoundException($"Employee with ID {id} was not found.");
+        {
+            throw new KeyNotFoundException($"Employee with ID {id} was not found in the database.");
+        }
 
         return employee;
     }
 
     public async Task<int> GetMaxEmployeeIdAsync()
     {
-        return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
+        try
+        {
+            return await _context.Employee.MaxAsync(e => (int?)e.EmployeeID) ?? 0;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("An error occurred while retrieving the maximum employee ID.", ex);
+        }
     }
 
     public async Task<EmployeeModel> UpdateEmployeeAsync(int id, EmployeeModel updatedEmployee)
     {
+        if (updatedEmployee == null)
+        {
+            throw new ArgumentNullException(nameof(updatedEmployee), "Updated employee cannot be null.");
+        }
+
         var existingEmployee = await _context.Employee.FirstOrDefaultAsync(e => e.EmployeeID == id);
 
         if (existingEmployee == null)
+        {
             throw new KeyNotFoundException($"Employee with ID {id} not found.");
+        }
 
         existingEmployee.JobTitle = updatedEmployee.JobTitle;
         existingEmployee.Experience = updatedEmployee.Experience;
@@ -72,33 +99,44 @@ public class EmployeeService : IEmployeeService
         return existingEmployee;
     }
 
-    public Task<EmployeeModel> DeleteEmployeeAsync(int id)
+    public async Task<EmployeeModel> DeleteEmployeeAsync(int id)
     {
-        var employee = _context.Employee.Find(id);
-        if (employee != null)
+        var employee = await _context.Employee.FindAsync(id); // Use FindAsync for async operation
+        if (employee == null)
         {
-            _context.Employee.Remove(employee);
-            _context.SaveChangesAsync();
+            throw new KeyNotFoundException($"Employee with ID {id} not found.");
         }
 
-        if (employee == null)
-            throw new KeyNotFoundException($"Employee with ID {id} not found.");
+        _context.Employee.Remove(employee);
+        await _context.SaveChangesAsync(); // Await the save operation
 
-        return Task.FromResult(employee);
+        return employee;
     }
 
     public async Task<List<string>> GetAllJobTitlesAsync()
     {
-        return await _context.Employee
-            .Select(e => e.JobTitle!)
-            .Where(title => title != null)
-            .Distinct()
-            .OrderBy(title => title)
-            .ToListAsync();
+        try
+        {
+            return await _context.Employee
+                .Select(e => e.JobTitle!)
+                .Where(title => title != null)
+                .Distinct()
+                .OrderBy(title => title)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("An error occurred while retrieving job titles.", ex);
+        }
     }
 
     public async Task<List<EmployeeModel>> GetEmployeesByJobTitleAsync(string jobTitle)
     {
+        if (string.IsNullOrWhiteSpace(jobTitle))
+        {
+            throw new ArgumentException("Job title cannot be null or empty.", nameof(jobTitle));
+        }
+
         return await _context.Employee
             .Where(e => e.JobTitle == jobTitle)
             .Include(e => e.Company)

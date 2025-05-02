@@ -139,6 +139,20 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public async Task BulkCreateEmployeesAsync_DoesNothingForEmptyList()
+        {
+            // Arrange
+            var emptyList = new List<EmployeeModel>();
+
+            // Act
+            await _employeeService.BulkCreateEmployeesAsync(emptyList);
+            var employees = await _employeeService.GetAllEmployeesAsync();
+
+            // Assert
+            Assert.That(employees.Count, Is.EqualTo(2)); // No new employees should be added
+        }
+
+        [Test]
         public async Task DeleteEmployeeAsync_RemovesEmployee()
         {
             // Act
@@ -193,6 +207,13 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public void UpdateEmployeeAsync_ThrowsExceptionForNullInput()
+        {
+            // Act & Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await _employeeService.UpdateEmployeeAsync(1, null!));
+        }
+
+        [Test]
         public async Task GetAllJobTitlesAsync_ReturnsUniqueJobTitles()
         {
             // Act
@@ -213,6 +234,68 @@ namespace WebAPI.Tests.Services
             // Assert
             Assert.That(employees.Count, Is.EqualTo(1));
             Assert.That(employees[0].JobTitle, Is.EqualTo("Software Engineer"));
+        }
+
+        [Test]
+        public void GetEmployeesByJobTitleAsync_ThrowsExceptionForNullOrEmptyJobTitle()
+        {
+            // Act & Assert
+            Assert.ThrowsAsync<ArgumentException>(async () => await _employeeService.GetEmployeesByJobTitleAsync(null!));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _employeeService.GetEmployeesByJobTitleAsync(""));
+        }
+
+        [Test]
+        public async Task DeleteAllEmployeesAsync_RemovesAllEmployees()
+        {
+            // Act
+            await _employeeService.DeleteAllEmployeesAsync();
+            var employees = await _employeeService.GetAllEmployeesAsync();
+
+            // Assert
+            Assert.That(employees.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetAllEmployeesAsync_ReturnsEmptyList_WhenDatabaseIsEmpty()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act
+            var employees = await _employeeService.GetAllEmployeesAsync();
+
+            // Assert
+            Assert.That(employees, Is.Empty);
+        }
+
+        [Test]
+        public async Task GetAllJobTitlesAsync_ReturnsEmptyList_WhenDatabaseIsEmpty()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act
+            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+
+            // Assert
+            Assert.That(jobTitles, Is.Empty);
+        }
+
+        [Test]
+        public void BulkCreateEmployeesAsync_ThrowsExceptionForNullInput()
+        {
+            // Act & Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await _employeeService.BulkCreateEmployeesAsync(null!));
+        }
+
+        [Test]
+        public async Task DeleteAllEmployeesAsync_ThrowsException_WhenNoEmployeesExist()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act & Assert
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await _employeeService.DeleteAllEmployeesAsync());
         }
     }
 }
