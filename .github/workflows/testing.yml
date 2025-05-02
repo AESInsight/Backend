@@ -24,11 +24,14 @@ jobs:
         run: dotnet restore
 
       - name: Install JUnit test logger
-        run: dotnet tool install --global JunitXml.TestLogger
+        run: |
+          export DOTNET_TOOLS_PATH=$HOME/.dotnet/tools
+          mkdir -p $DOTNET_TOOLS_PATH
+          dotnet tool install --tool-path $DOTNET_TOOLS_PATH JunitXml.TestLogger
 
       - name: Build and run unit tests
         env:
-          PATH: $PATH:/home/runner/.dotnet/tools
+          PATH: $PATH:$HOME/.dotnet/tools 
         run: |
           dotnet clean
           dotnet build
