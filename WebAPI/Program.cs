@@ -97,21 +97,19 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate(); // Apply pending migrations to the database
-    // Optionally, call a method to seed additional data if needed
 
-    // Query company with ID 4
-    var company = await dbContext.Companies.FindAsync(4);
-    if (company != null)
-    {
-        Console.WriteLine($"Company ID: {company.CompanyID}");
-        Console.WriteLine($"Company Name: {company.CompanyName}");
-        Console.WriteLine($"Email: {company.Email}");
-        Console.WriteLine($"Password Hash: {company.PasswordHash}");
-    }
-    else
-    {
-        Console.WriteLine("Company with ID 4 not found");
-    }
+    // Remove or comment out this block if no longer needed
+    // var company = await dbContext.Companies.FindAsync(4);
+    // if (company != null)
+    // {
+    //     Console.WriteLine($"Company ID: {company.CompanyID}");
+    //     Console.WriteLine($"Company Name: {company.CompanyName}");
+    //     Console.WriteLine($"Email: {company.Email}");
+    // }
+    // else
+    // {
+    //     Console.WriteLine("Company with ID 4 not found");
+    // }
 }
 
 app.Run(); // Run the application

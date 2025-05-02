@@ -26,78 +26,63 @@ namespace Backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // First try to find a user
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
-
+            // Find user or company by username
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user != null && VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 var token = GenerateJwtToken(user.Username, user.Role);
                 return Ok(new { Token = token });
             }
 
-            // If no user found, try to find a company
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(c => c.Email == request.Username);
-
-            if (company != null && BCrypt.Net.BCrypt.Verify(request.Password, company.PasswordHash))
-            {
-                var token = GenerateJwtToken(company.Email, "Company");
-                return Ok(new { Token = token });
-            }
-
-            return Unauthorized();
+            // Optional: Add logic for companies if needed
+            return Unauthorized(new { message = "Invalid username or password" });
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Check if username/email already exists in either users or companies
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username) ||
-                await _context.Companies.AnyAsync(c => c.Email == request.Username))
+            // Log the incoming request
+            Console.WriteLine($"Register Request: Username={request.Username}, IsCompany={request.IsCompany}, CompanyID={request.CompanyID}");
+
+            // Check if username already exists in users
+            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
             {
-                return BadRequest(new { message = "Username/Email already exists" });
+                return BadRequest(new { message = "Username already exists. Please use a different username." });
             }
 
             if (request.IsCompany)
             {
-                // Get the next available CompanyID
-                var maxCompanyId = await _context.Companies.MaxAsync(c => (int?)c.CompanyID) ?? 0;
-                
-                // Create company
-                var company = new CompanyModel
+                // Check if the company exists using the provided CompanyID
+                var company = await _context.Companies.FirstOrDefaultAsync(c => c.CompanyID == request.CompanyID);
+
+                if (company == null)
                 {
-                    CompanyID = maxCompanyId + 1,
-                    CompanyName = request.CompanyName,
-                    Industry = request.Industry,
-                    CVR = request.CVR,
-                    Email = request.Username,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
-                };
+                    return NotFound(new { message = "Company not found. Please provide a valid CompanyID." });
+                }
 
-                _context.Companies.Add(company);
-                await _context.SaveChangesAsync();
+                // Log the company details
+                Console.WriteLine($"Company Found: CompanyID={company.CompanyID}, Email={company.Email}");
 
-                // Get the next available UserId
-                var maxUserId = await _context.Users.MaxAsync(u => (int?)u.UserId) ?? 0;
-
-                // Also create a user account for the company
+                // Create a login for the existing company
                 using (var hmac = new System.Security.Cryptography.HMACSHA512())
                 {
                     var user = new User
                     {
-                        UserId = maxUserId + 1,
                         Username = request.Username,
                         PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                         PasswordSalt = hmac.Key,
-                        Role = "Company" // Special role for company users
+                        Role = "Company", // Assign the "Company" role
+                        CompanyID = request.CompanyID // Associate the user with the company
                     };
 
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
+
+                    // Log the saved user details
+                    Console.WriteLine($"User Created: Username={user.Username}, CompanyID={user.CompanyID}");
                 }
 
-                return Ok(new { message = "Company registered successfully" });
+                return Ok(new { message = "Login created successfully for the existing company" });
             }
             else
             {
@@ -118,10 +103,47 @@ namespace Backend.Controllers
 
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
+
+                    // Log the saved user details
+                    Console.WriteLine($"User Created: Username={user.Username}, Role={user.Role}");
                 }
 
                 return Ok(new { message = "User registered successfully" });
             }
+        }
+
+        [HttpPost("add-company-login")]
+        public async Task<IActionResult> AddCompanyLogin([FromBody] AddCompanyLoginRequest request)
+        {
+            // Check if the company exists
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Email == request.CompanyEmail);
+            if (company == null)
+            {
+                return NotFound(new { message = "Company not found" });
+            }
+
+            // Check if the username already exists
+            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+            {
+                return BadRequest(new { message = "Username already exists" });
+            }
+
+            // Create a new user account for the company
+            using (var hmac = new System.Security.Cryptography.HMACSHA512())
+            {
+                var user = new User
+                {
+                    Username = request.Username,
+                    PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
+                    PasswordSalt = hmac.Key,
+                    Role = "Company" // Assign the "Company" role
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { message = "Login created successfully for the company" });
         }
 
         private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
@@ -178,8 +200,16 @@ namespace Backend.Controllers
         public string Password { get; set; } = null!;
         public string Role { get; set; } = "User";
         public bool IsCompany { get; set; }
+        public int? CompanyID { get; set; } // Optional CompanyID for existing companies
         public string? CompanyName { get; set; }
         public string? Industry { get; set; }
         public string? CVR { get; set; }
+    }
+
+    public class AddCompanyLoginRequest
+    {
+        public string CompanyEmail { get; set; } = null!; // Email of the existing company
+        public string Username { get; set; } = null!;    // New username for the login
+        public string Password { get; set; } = null!;    // Password for the new login
     }
 }
