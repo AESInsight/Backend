@@ -23,7 +23,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Install JUnit test logger
+        run: dotnet tool install --global JunitXml.TestLogger
+
       - name: Build and run unit tests
+        env:
+          PATH: $PATH:/home/runner/.dotnet/tools
         run: |
           dotnet clean
           dotnet build
