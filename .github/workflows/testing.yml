@@ -28,7 +28,7 @@ jobs:
         run: |
           dotnet clean
           dotnet build
-          dotnet test Microwave.Classes.Test --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+          dotnet test WebAPI.Tests --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
 
       - name: Generate coverage report
         run: |
