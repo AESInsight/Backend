@@ -23,6 +23,9 @@ jobs:
         run: |
           dotnet test --collect:"XPlat Code Coverage" --logger:"trx;LogFileName=test-results.trx"
 
+      - name: Debug - List Test Results Directory
+        run: ls -R ./  # List all files and directories to locate the coverage file
+
       - name: Test Reports
         uses: xportation/junit-coverage-report@main
         with:
