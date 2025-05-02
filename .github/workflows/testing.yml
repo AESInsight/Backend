@@ -2,11 +2,7 @@ name: Testing and Coverage Report
 
 on:
   push:
-    branches:
-      - '**' # Triggers on every branch
   pull_request:
-    branches:
-      - '**' # Triggers on pull requests for every branch
 
 jobs:
   build-and-unittest:
@@ -26,16 +22,13 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Install JUnit test logger
-        run: dotnet tool install --global JunitXml.TestLogger --version 3.0.0
-
       - name: Build and run unit tests
         env:
           PATH: $PATH:/home/runner/.dotnet/tools
         run: |
           dotnet clean
           dotnet build
-          dotnet test WebAPI.Tests --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+          dotnet test Microwave.Classes.Test --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
 
       - name: Generate coverage report
         run: |
