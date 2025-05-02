@@ -22,12 +22,13 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Create tool manifest
+        run: dotnet new tool-manifest --force
+
       - name: Install JunitXml.TestLogger
-        run: dotnet tool install --global JunitXml.TestLogger
+        run: dotnet tool install JunitXml.TestLogger --version 3.0.158
 
       - name: Build and run unit tests
-        env:
-          PATH: $PATH:/home/runner/.dotnet/tools
         run: |
           dotnet clean
           dotnet build
