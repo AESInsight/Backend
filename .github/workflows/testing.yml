@@ -28,3 +28,6 @@ jobs:
         with:
           junit-path: ./reports/unit/unit.xml  
           coverage-path: ./reports/coverage/coverage.xml
+
+      - name: Display Coverage Summary
+        run: cat ./reports/coverage/coverage.xml
