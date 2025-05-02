@@ -49,23 +49,27 @@ public class EmailService : IEmailService
                 <h2>Password Reset Request</h2>
                 <p>Hello {company.CompanyName},</p>
                 <p>You have requested to reset your password for your AES Insight account.</p>
-                <p>To reset your password, please follow these steps:</p>
-                <ol>
-                    <li>Go to <a href='http://localhost:5170/swagger'>Swagger UI</a></li>
-                    <li>Find the POST /api/PasswordReset/reset endpoint</li>
-                    <li>Click 'Try it out'</li>
-                    <li>Enter the following information:
-                        <ul>
-                            <li>token: {resetToken}</li>
-                            <li>newPassword: (your new password)</li>
-                            <li>confirmPassword: (your new password again)</li>
-                        </ul>
-                    </li>
-                    <li>Click 'Execute'</li>
-                </ol>
+                <p>To reset your password, please click the button below:</p>
+
+                <div style='margin: 24px 0; text-align: center;'>
+                    <a href='https://aes-insight.dk/reset-password?token={resetToken}'
+                        style='
+                            display: inline-block;
+                            background-color: #007bff;
+                            color: white;
+                            padding: 12px 24px;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            font-weight: bold;
+                            font-size: 16px;
+                        '>
+                        Reset Your Password
+                    </a>
+                </div>
+
                 <p><strong>Important:</strong> This token will expire in 5 minutes.</p>
                 <p>If you did not request this password reset, please ignore this email.</p>
-                <p>Best regards,<br>AES Insight Team</p>
+                <p>Best regards,<br />AES Insight Team</p>
             "
         };
 
