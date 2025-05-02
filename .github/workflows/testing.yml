@@ -1,0 +1,41 @@
+name: .NET Testing Workflow
+
+on:
+  push:
+    branches:
+      - '**' # Triggers on every branch
+  pull_request:
+    branches:
+      - '**' # Triggers on pull requests for every branch
+
+jobs:
+  build-and-unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build and run unit tests
+        run: |
+          dotnet clean
+          dotnet build
+          dotnet test WebAPI.Tests --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
+
+      - name: Generate coverage report
+        run: |
+          dotnet ~/.nuget/packages/reportgenerator/*/tools/net8.0/ReportGenerator.dll -reports:./*/*/*/coverage.cobertura.xml -targetdir:coveragereport "-reporttypes:Html;TextSummary"
+          cat ./coveragereport/Summary.txt
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coveragereport
