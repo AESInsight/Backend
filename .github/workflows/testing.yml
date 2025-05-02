@@ -20,18 +20,18 @@ jobs:
         with:
           dotnet-version: 8.0
 
+      - name: Clear NuGet cache
+        run: dotnet nuget locals all --clear
+
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Install JUnit test logger
-        run: |
-          export DOTNET_TOOLS_PATH=$HOME/.dotnet/tools
-          mkdir -p $DOTNET_TOOLS_PATH
-          dotnet tool install --tool-path $DOTNET_TOOLS_PATH JunitXml.TestLogger
+        run: dotnet tool install --global JunitXml.TestLogger --version 3.1.0
 
       - name: Build and run unit tests
         env:
-          PATH: $PATH:$HOME/.dotnet/tools 
+          PATH: $PATH:/home/runner/.dotnet/tools
         run: |
           dotnet clean
           dotnet build
