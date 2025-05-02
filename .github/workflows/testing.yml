@@ -27,7 +27,7 @@ jobs:
         run: dotnet restore
 
       - name: Install JUnit test logger
-        run: dotnet tool install --global JunitXml.TestLogger --version 3.0.145
+        run: dotnet tool install --global JunitXml.TestLogger --version 3.0.0
 
       - name: Build and run unit tests
         env:
