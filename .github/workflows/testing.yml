@@ -22,25 +22,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Create tool manifest
-        run: dotnet new tool-manifest --force
-
-      - name: Install JunitXml.TestLogger
-        run: dotnet tool install JunitXml.TestLogger
-
-      - name: Build and run unit tests
-        run: |
-          dotnet clean
-          dotnet build
-          dotnet test WebAPI.Tests --collect:"XPlat Code Coverage" --logger:"junit;MethodFormat=Class;FailureBodyFormat=Verbose"
-
-      - name: Generate coverage report
-        run: |
-          dotnet ~/.nuget/packages/reportgenerator/*/tools/net8.0/ReportGenerator.dll -reports:./*/*/*/coverage.cobertura.xml -targetdir:coveragereport "-reporttypes:Html;TextSummary"
-          cat ./coveragereport/Summary.txt
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+      - name: Test Reports
+        uses: xportation/junit-coverage-report@main
         with:
-          name: coverage-report
-          path: coveragereport
+          junit-path: ./reports/unit/unit.xml  
+          coverage-path: ./reports/coverage/coverage.xml
