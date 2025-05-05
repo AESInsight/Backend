@@ -34,18 +34,20 @@ public class PasswordResetController : ControllerBase
     [HttpPost("request-reset")]
     public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
     {
-        // Check if email exists in either users or companies
+        // Only check the User table
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == request.Email);
-
-        if (user == null && company == null)
+        if (user == null)
         {
             return Ok(new { message = "If your email is registered, you will receive a password reset link." });
         }
 
         var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         var expiration = DateTime.UtcNow.AddMinutes(5);
-        _resetTokens[token] = (request.Email, expiration);
+
+        user.ResetPasswordToken = token;
+        user.ResetPasswordTokenExpiry = expiration;
+        await _dbContext.SaveChangesAsync();
+
         await _emailService.SendPasswordResetEmailAsync(request.Email, token);
 
         return Ok(new { message = "If your email is registered, you will receive a password reset link." });
@@ -59,48 +61,29 @@ public class PasswordResetController : ControllerBase
             return BadRequest(new { message = "Passwords do not match" });
         }
 
-        if (!_resetTokens.TryGetValue(request.Token, out var tokenInfo))
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u =>
+            u.ResetPasswordToken == request.Token &&
+            u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+
+        if (user == null)
         {
-            return BadRequest(new { message = "Invalid token" });
+            return BadRequest(new { message = "Invalid or expired token" });
         }
 
-        if (DateTime.UtcNow > tokenInfo.Expiration)
+        using (var hmac = new HMACSHA512())
         {
-            _resetTokens.Remove(request.Token);
-            return BadRequest(new { message = "Token has expired. Please request a new password reset." });
+            user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword));
+            user.PasswordSalt = hmac.Key;
+            user.ResetPasswordToken = null;
+            user.ResetPasswordTokenExpiry = null;
         }
-
-        // Try to find user first
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == tokenInfo.Email);
-        if (user != null)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword));
-                user.PasswordSalt = hmac.Key;
-            }
-            await _dbContext.SaveChangesAsync();
-            _resetTokens.Remove(request.Token);
-            return Ok(new { message = "Password has been reset successfully" });
-        }
-
-        // If no user found, try company
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == tokenInfo.Email);
-        if (company != null)
-        {
-            company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-            await _dbContext.SaveChangesAsync();
-            _resetTokens.Remove(request.Token);
-            return Ok(new { message = "Password has been reset successfully" });
-        }
-
-        return BadRequest(new { message = "Invalid request" });
+        await _dbContext.SaveChangesAsync();
+        return Ok(new { message = "Password has been reset successfully" });
     }
 
     [HttpPost("verify")]
     public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordRequest request)
     {
-        // Try to find user first
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
         if (user != null)
         {
@@ -110,14 +93,6 @@ public class PasswordResetController : ControllerBase
                 return Ok(new { isValid = computedHash.SequenceEqual(user.PasswordHash) });
             }
         }
-
-        // If no user found, try company
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == request.Email);
-        if (company != null)
-        {
-            return Ok(new { isValid = BCrypt.Net.BCrypt.Verify(request.Password, company.PasswordHash) });
-        }
-
         return Ok(new { isValid = false });
     }
 }

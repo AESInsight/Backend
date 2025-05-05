@@ -52,11 +52,6 @@ public class CompanyService : ICompanyService
         existingCompany.CVR = company.CVR;
         existingCompany.Email = company.Email;
 
-        if (!string.IsNullOrEmpty(company.PasswordHash))
-        {
-            existingCompany.PasswordHash = company.PasswordHash;
-        }
-
         await _dbContext.SaveChangesAsync();
     }
 
@@ -97,16 +92,6 @@ public class CompanyService : ICompanyService
                     throw new ArgumentException($"Email for company '{company.CompanyName}' must be a valid email address.");
                 }
 
-                if (string.IsNullOrEmpty(company.PasswordHash))
-                {
-                    throw new ArgumentException($"Password for company '{company.CompanyName}' cannot be empty.");
-                }
-
-                if (!company.PasswordHash.StartsWith("$2"))
-                {
-                    company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(company.PasswordHash);
-                }
-
                 var existingCompany = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == company.Email);
                 if (existingCompany != null)
                 {
@@ -145,8 +130,7 @@ public class CompanyService : ICompanyService
                 CompanyName = $"Company {i}",
                 Industry = $"Industry {i}",
                 CVR = random.Next(10000000, 99999999).ToString(),
-                Email = $"company{i}@example.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123")
+                Email = $"company{i}@example.com"
             });
         }
 
@@ -160,13 +144,7 @@ public class CompanyService : ICompanyService
 
     public async Task<bool> VerifyPasswordAsync(string email, string password)
     {
-        var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == email);
-        if (company == null)
-        {
-            return false;
-        }
-
-        return BCrypt.Net.BCrypt.Verify(password, company.PasswordHash);
+        throw new NotSupportedException("Password verification is not supported in this service.");
     }
 
     public async Task<List<string>> GetAllIndustriesAsync()

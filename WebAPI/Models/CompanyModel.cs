@@ -18,6 +18,4 @@ public class CompanyModel
     [Required]
     [EmailAddress]
     public required string Email { get; set; } // Company's email address
-    
-    public required string PasswordHash { get; set; } // Hashed password
 }

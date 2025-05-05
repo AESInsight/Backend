@@ -106,7 +106,6 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Company ID: {company.CompanyID}");
         Console.WriteLine($"Company Name: {company.CompanyName}");
         Console.WriteLine($"Email: {company.Email}");
-        Console.WriteLine($"Password Hash: {company.PasswordHash}");
     }
     else
     {
