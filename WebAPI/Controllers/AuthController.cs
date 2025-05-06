@@ -28,11 +28,11 @@ namespace Backend.Controllers
         {
             // Only check the User table
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user != null && VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
-                var token = GenerateJwtToken(user.Username, user.Role);
+                var token = GenerateJwtToken(user.Email, user.Role);
                 return Ok(new { Token = token });
             }
 
@@ -42,11 +42,11 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Check if username/email already exists in users or companies
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username) ||
-                await _context.Companies.AnyAsync(c => c.Email == request.Username))
+            // Check if Email/email already exists in users or companies
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email) ||
+                await _context.Companies.AnyAsync(c => c.Email == request.Email))
             {
-                return BadRequest(new { message = "Username/Email already exists" });
+                return BadRequest(new { message = "Email/Email already exists" });
             }
 
             int? companyId = request.CompanyID;
@@ -63,7 +63,7 @@ namespace Backend.Controllers
                 var user = new User
                 {
                     UserId = maxUserId + 1,
-                    Username = request.Username,
+                    Email = request.Email,
                     PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                     PasswordSalt = hmac.Key,
                     Role = request.Role,
@@ -90,7 +90,7 @@ namespace Backend.Controllers
             }
         }
 
-        private string GenerateJwtToken(string username, string role)
+        private string GenerateJwtToken(string Email, string role)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var keyString = jwtSettings["Key"] ?? "DefaultSecretKey";
@@ -99,7 +99,7 @@ namespace Backend.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(JwtRegisteredClaimNames.Sub, Email),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
@@ -120,13 +120,13 @@ namespace Backend.Controllers
 
     public class LoginRequest
     {
-        public string Username { get; set; } = null!;
+        public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 
     public class RegisterRequest
     {
-        public string Username { get; set; } = null!;
+        public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
         public string Role { get; set; } = "User";
         public int? CompanyID { get; set; } // Optional: assign to a company if provided

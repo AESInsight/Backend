@@ -10,7 +10,7 @@ namespace Backend.Models
 
         [Required]
         [MaxLength(50)]
-        public string Username { get; set; } = null!;
+        public string Email { get; set; } = null!;
 
         [Required]
         public byte[] PasswordHash { get; set; } = null!;

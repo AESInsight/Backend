@@ -20,8 +20,8 @@ public class PasswordResetController : ControllerBase
     private static readonly Dictionary<string, (string Email, DateTime Expiration)> _resetTokens = new();
 
     public PasswordResetController(
-        IEmailService emailService, 
-        ApplicationDbContext dbContext, 
+        IEmailService emailService,
+        ApplicationDbContext dbContext,
         ILogger<PasswordResetController> logger,
         ICompanyService companyService)
     {
@@ -35,7 +35,7 @@ public class PasswordResetController : ControllerBase
     public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
     {
         // Only check the User table
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user == null)
         {
             return Ok(new { message = "If your email is registered, you will receive a password reset link." });
@@ -84,7 +84,7 @@ public class PasswordResetController : ControllerBase
     [HttpPost("verify")]
     public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordRequest request)
     {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Email);
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user != null)
         {
             using (var hmac = new HMACSHA512(user.PasswordSalt))
@@ -113,4 +113,4 @@ public class VerifyPasswordRequest
 {
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
-} 
+}
