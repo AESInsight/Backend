@@ -69,6 +69,34 @@ namespace WebAPI.Tests.Services
                 }
             });
 
+            dbContext.Salaries.AddRange(new List<SalaryModel>
+            {
+                new SalaryModel
+                {
+                    EmployeeID = 1,
+                    Salary = 5000,
+                    Timestamp = new DateTime(2025, 1, 1)
+                },
+                new SalaryModel
+                {
+                    EmployeeID = 1,
+                    Salary = 5500,
+                    Timestamp = new DateTime(2025, 2, 1)
+                },
+                new SalaryModel
+                {
+                    EmployeeID = 2,
+                    Salary = 4800,
+                    Timestamp = new DateTime(2025, 1, 1)
+                },
+                new SalaryModel
+                {
+                    EmployeeID = 2,
+                    Salary = 5000,
+                    Timestamp = new DateTime(2025, 2, 1)
+                }
+            });
+
             dbContext.SaveChanges();
 
             // Initialize the service
@@ -296,6 +324,129 @@ namespace WebAPI.Tests.Services
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(async () => await _employeeService.DeleteAllEmployeesAsync());
+        }
+
+        [Test]
+        public async Task GetSalaryDifferencesByGenderAsync_ReturnsCorrectSalaryDifferences()
+        {
+            // Arrange
+            var jobTitle = "Software Engineer";
+
+            // Act
+            var result = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.ContainsKey("Male"), Is.True);
+            Assert.That(result["Male"].Count, Is.EqualTo(2)); // Two salary records for the male employee
+            Assert.That(result["Male"].Average(s => s.AverageSalary), Is.EqualTo(5250));
+        }
+
+        [Test]
+        public async Task GetSalaryDifferencesByGenderAsync_ReturnsEmptyForNonExistentJobTitle()
+        {
+            // Arrange
+            var jobTitle = "Non-Existent Job";
+
+            // Act
+            var result = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
+
+            // Assert
+            Assert.That(result["Male"].Count, Is.EqualTo(0));
+            Assert.That(result["Female"].Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetMaxEmployeeIdAsync_ReturnsCorrectMaxId()
+        {
+            // Act
+            var maxId = await _employeeService.GetMaxEmployeeIdAsync();
+
+            // Assert
+            Assert.That(maxId, Is.EqualTo(2)); // The highest EmployeeID in the seeded data
+        }
+
+        [Test]
+        public async Task GetMaxEmployeeIdAsync_ReturnsZero_WhenNoEmployeesExist()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act
+            var maxId = await _employeeService.GetMaxEmployeeIdAsync();
+
+            // Assert
+            Assert.That(maxId, Is.EqualTo(0)); // No employees, so max ID should be 0
+        }
+
+        [Test]
+        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsCorrectSalaryDifferences()
+        {
+            // Act
+            var result = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.ContainsKey("Male"), Is.True);
+            Assert.That(result.ContainsKey("Female"), Is.True);
+
+            // Male salary differences
+            Assert.That(result["Male"].Count, Is.EqualTo(2)); // Two months of salary records
+            Assert.That(result["Male"][0].AverageSalary, Is.EqualTo(5000));
+            Assert.That(result["Male"][1].AverageSalary, Is.EqualTo(5500));
+
+            // Female salary differences
+            Assert.That(result["Female"].Count, Is.EqualTo(2)); // Two months of salary records
+            Assert.That(result["Female"][0].AverageSalary, Is.EqualTo(4800));
+            Assert.That(result["Female"][1].AverageSalary, Is.EqualTo(5000));
+        }
+
+        [Test]
+        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsEmpty_WhenNoSalariesExist()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act
+            var result = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
+
+            // Assert
+            Assert.That(result["Male"].Count, Is.EqualTo(0));
+            Assert.That(result["Female"].Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task DeleteEmployeeAsync_RemovesAssociatedSalaries()
+        {
+            // Act
+            await _employeeService.DeleteEmployeeAsync(1); // Delete the male employee
+            var salaries = await _employeeService.GetAllEmployeesAsync();
+
+            // Assert
+            Assert.That(salaries.Any(s => s.EmployeeID == 1), Is.False); // Ensure no salaries exist for EmployeeID 1
+        }
+
+        [Test]
+        public async Task GetEmployeesByJobTitleAsync_ReturnsEmptyList_WhenNoMatchingEmployees()
+        {
+            // Act
+            var employees = await _employeeService.GetEmployeesByJobTitleAsync("Non-Existent Job");
+
+            // Assert
+            Assert.That(employees, Is.Empty);
+        }
+
+        [Test]
+        public async Task GetAllJobTitlesAsync_ReturnsEmptyList_WhenNoEmployeesExist()
+        {
+            // Arrange
+            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+
+            // Act
+            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+
+            // Assert
+            Assert.That(jobTitles, Is.Empty);
         }
     }
 }
