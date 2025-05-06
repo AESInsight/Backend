@@ -12,7 +12,6 @@ on:
       - develop
       - feat/**
 
-
 jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
@@ -34,16 +33,27 @@ jobs:
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
             --logger "trx;LogFileName=test-results.trx" \
             --collect:"XPlat Code Coverage" \
-            /p:CoverletOutputFormat=cobertura
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=./TestResults/
+        continue-on-error: true # Fortsæt selv ved fejl for debugging
+
+      - name: Debug generated files
+        run: |
+          ls -la ./WebAPI.Tests/TestResults
+          find . -name "*.trx"
+          find . -name "*.xml"
+        if: always()
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: "**/test-results.trx"
+          path: ./WebAPI.Tests/TestResults/test-results.trx
+        if: always()
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: "**/coverage.cobertura.xml"
+          path: ./WebAPI.Tests/TestResults/coverage.cobertura.xml
+        if: always()
