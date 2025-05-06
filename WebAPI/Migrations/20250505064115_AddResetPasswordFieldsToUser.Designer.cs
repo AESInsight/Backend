@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250505064115_AddResetPasswordFieldsToUser")]
+    partial class AddResetPasswordFieldsToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,18 +50,6 @@ namespace Backend.Migrations
                     b.Property<string>("Industry")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .HasColumnType("longblob");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ResetPasswordToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("CompanyID");
 
@@ -130,11 +121,6 @@ namespace Backend.Migrations
                     b.Property<int?>("CompanyID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longblob");
@@ -154,6 +140,11 @@ namespace Backend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("CompanyID");
@@ -164,18 +155,18 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-                            Email = "admin",
-                            PasswordHash = new byte[] { 137, 74, 61, 132, 4, 158, 111, 65, 172, 62, 198, 159, 48, 178, 121, 222, 185, 103, 9, 127, 102, 3, 62, 54, 21, 12, 43, 187, 133, 8, 188, 35, 251, 129, 136, 135, 50, 79, 17, 115, 187, 62, 224, 243, 237, 69, 184, 11, 125, 171, 252, 255, 57, 180, 138, 44, 208, 48, 217, 26, 33, 122, 33, 46 },
-                            PasswordSalt = new byte[] { 147, 5, 163, 31, 205, 71, 173, 186, 200, 86, 50, 154, 219, 45, 160, 188, 8, 146, 24, 243, 41, 48, 190, 41, 169, 80, 18, 27, 156, 228, 145, 225, 122, 188, 128, 166, 191, 32, 142, 196, 176, 142, 139, 95, 232, 189, 10, 202, 173, 215, 250, 243, 68, 62, 212, 66, 75, 180, 199, 224, 18, 86, 241, 112, 244, 24, 173, 65, 222, 186, 194, 226, 166, 204, 139, 48, 165, 86, 179, 112, 64, 102, 14, 135, 227, 185, 249, 193, 99, 79, 182, 62, 124, 214, 11, 116, 118, 44, 190, 223, 249, 73, 36, 209, 27, 186, 117, 146, 224, 183, 54, 85, 151, 201, 58, 112, 65, 27, 55, 243, 27, 234, 36, 30, 246, 152, 210, 132 },
-                            Role = "Admin"
+                            PasswordHash = new byte[] { 176, 167, 142, 33, 245, 16, 111, 25, 162, 177, 106, 93, 113, 172, 188, 168, 100, 154, 231, 34, 21, 165, 193, 43, 106, 112, 180, 20, 202, 208, 165, 248, 153, 25, 245, 189, 11, 205, 25, 0, 209, 149, 163, 42, 14, 247, 135, 140, 102, 15, 231, 28, 147, 186, 38, 61, 106, 196, 162, 197, 64, 133, 43, 179 },
+                            PasswordSalt = new byte[] { 67, 5, 92, 80, 12, 108, 38, 19, 145, 37, 186, 64, 52, 33, 21, 38, 73, 101, 187, 91, 201, 53, 1, 96, 171, 216, 163, 37, 72, 110, 193, 14, 190, 40, 4, 176, 237, 198, 66, 111, 160, 209, 237, 143, 243, 2, 33, 166, 176, 112, 242, 240, 86, 0, 65, 137, 33, 169, 143, 95, 179, 96, 155, 103, 153, 112, 31, 188, 141, 127, 189, 151, 70, 154, 50, 210, 211, 122, 202, 243, 31, 21, 77, 94, 93, 166, 42, 165, 73, 102, 52, 44, 93, 17, 247, 63, 196, 195, 183, 16, 180, 86, 113, 164, 132, 195, 27, 26, 182, 188, 191, 161, 203, 67, 183, 97, 65, 109, 21, 123, 66, 149, 211, 149, 240, 97, 177, 170 },
+                            Role = "Admin",
+                            Username = "admin"
                         },
                         new
                         {
                             UserId = 2,
-                            Email = "user",
-                            PasswordHash = new byte[] { 199, 5, 58, 1, 107, 224, 17, 72, 228, 77, 77, 175, 90, 84, 21, 128, 160, 200, 1, 10, 2, 113, 143, 4, 189, 145, 196, 103, 216, 102, 164, 203, 92, 56, 235, 198, 187, 97, 209, 180, 49, 32, 125, 139, 110, 160, 134, 24, 244, 184, 41, 210, 16, 49, 74, 216, 254, 58, 124, 38, 77, 194, 42, 66 },
-                            PasswordSalt = new byte[] { 192, 105, 204, 89, 28, 143, 203, 96, 85, 143, 109, 111, 96, 35, 111, 44, 46, 253, 3, 122, 69, 141, 160, 0, 97, 194, 97, 19, 26, 62, 185, 6, 13, 9, 184, 71, 193, 192, 196, 47, 125, 201, 73, 79, 52, 169, 11, 58, 9, 66, 126, 99, 176, 131, 54, 214, 151, 15, 85, 48, 90, 242, 106, 73, 98, 223, 7, 231, 93, 184, 42, 33, 12, 212, 34, 57, 225, 18, 124, 52, 172, 108, 131, 142, 178, 140, 222, 199, 207, 44, 173, 125, 86, 198, 221, 211, 114, 172, 222, 108, 212, 117, 186, 204, 251, 71, 210, 51, 112, 223, 28, 73, 222, 133, 213, 86, 65, 222, 188, 73, 91, 121, 72, 28, 121, 187, 127, 160 },
-                            Role = "User"
+                            PasswordHash = new byte[] { 196, 4, 66, 117, 175, 69, 137, 223, 198, 156, 14, 187, 214, 13, 8, 203, 5, 15, 120, 82, 33, 155, 190, 90, 4, 40, 115, 112, 49, 198, 138, 213, 133, 246, 187, 113, 163, 196, 248, 178, 158, 209, 178, 57, 72, 55, 121, 53, 62, 95, 121, 250, 89, 133, 149, 155, 148, 215, 118, 65, 108, 252, 254, 252 },
+                            PasswordSalt = new byte[] { 125, 115, 186, 39, 24, 220, 46, 233, 186, 234, 3, 62, 163, 84, 27, 41, 203, 235, 148, 112, 236, 160, 113, 113, 132, 120, 97, 255, 53, 56, 152, 228, 61, 25, 121, 165, 3, 98, 30, 86, 9, 56, 167, 35, 42, 220, 200, 170, 52, 58, 205, 234, 96, 116, 66, 44, 221, 170, 162, 88, 176, 11, 183, 224, 47, 208, 188, 79, 79, 83, 72, 107, 48, 172, 29, 215, 149, 146, 233, 191, 143, 155, 16, 203, 98, 57, 23, 74, 209, 121, 129, 32, 150, 133, 162, 33, 220, 21, 165, 184, 162, 228, 123, 224, 255, 201, 234, 80, 102, 120, 25, 178, 213, 101, 156, 42, 96, 196, 237, 62, 163, 83, 107, 97, 170, 90, 214, 65 },
+                            Role = "User",
+                            Username = "user"
                         });
                 });
 

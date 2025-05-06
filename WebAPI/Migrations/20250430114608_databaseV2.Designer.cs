@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430114608_databaseV2")]
+    partial class databaseV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,17 +51,9 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .HasColumnType("longblob");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ResetPasswordToken")
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("CompanyID");
 
@@ -127,14 +122,6 @@ namespace Backend.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
 
-                    b.Property<int?>("CompanyID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longblob");
@@ -143,20 +130,17 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longblob");
 
-                    b.Property<string>("ResetPasswordToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.HasKey("UserId");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
-                    b.HasIndex("CompanyID");
+                    b.HasKey("UserId");
 
                     b.ToTable("Users");
 
@@ -164,18 +148,18 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-                            Email = "admin",
-                            PasswordHash = new byte[] { 137, 74, 61, 132, 4, 158, 111, 65, 172, 62, 198, 159, 48, 178, 121, 222, 185, 103, 9, 127, 102, 3, 62, 54, 21, 12, 43, 187, 133, 8, 188, 35, 251, 129, 136, 135, 50, 79, 17, 115, 187, 62, 224, 243, 237, 69, 184, 11, 125, 171, 252, 255, 57, 180, 138, 44, 208, 48, 217, 26, 33, 122, 33, 46 },
-                            PasswordSalt = new byte[] { 147, 5, 163, 31, 205, 71, 173, 186, 200, 86, 50, 154, 219, 45, 160, 188, 8, 146, 24, 243, 41, 48, 190, 41, 169, 80, 18, 27, 156, 228, 145, 225, 122, 188, 128, 166, 191, 32, 142, 196, 176, 142, 139, 95, 232, 189, 10, 202, 173, 215, 250, 243, 68, 62, 212, 66, 75, 180, 199, 224, 18, 86, 241, 112, 244, 24, 173, 65, 222, 186, 194, 226, 166, 204, 139, 48, 165, 86, 179, 112, 64, 102, 14, 135, 227, 185, 249, 193, 99, 79, 182, 62, 124, 214, 11, 116, 118, 44, 190, 223, 249, 73, 36, 209, 27, 186, 117, 146, 224, 183, 54, 85, 151, 201, 58, 112, 65, 27, 55, 243, 27, 234, 36, 30, 246, 152, 210, 132 },
-                            Role = "Admin"
+                            PasswordHash = new byte[] { 38, 199, 242, 244, 192, 43, 175, 111, 47, 127, 228, 88, 234, 54, 197, 214, 201, 8, 158, 28, 215, 233, 136, 200, 112, 26, 101, 48, 245, 130, 158, 68, 153, 56, 158, 118, 166, 87, 205, 80, 211, 255, 28, 31, 227, 13, 9, 30, 240, 222, 28, 150, 91, 177, 23, 104, 175, 94, 251, 131, 16, 114, 39, 234 },
+                            PasswordSalt = new byte[] { 167, 122, 67, 22, 17, 244, 185, 192, 119, 188, 208, 12, 116, 120, 68, 62, 175, 113, 132, 73, 29, 125, 27, 121, 102, 20, 175, 71, 228, 133, 55, 82, 173, 188, 3, 34, 208, 145, 21, 157, 187, 1, 204, 49, 174, 59, 122, 185, 96, 24, 51, 101, 177, 167, 142, 69, 102, 161, 37, 68, 213, 95, 7, 194, 192, 181, 180, 18, 87, 104, 130, 64, 185, 79, 207, 187, 94, 126, 61, 133, 27, 61, 208, 45, 3, 144, 210, 7, 73, 51, 210, 238, 174, 57, 151, 10, 225, 133, 129, 195, 28, 124, 230, 82, 150, 13, 178, 166, 23, 180, 68, 116, 159, 102, 204, 24, 243, 236, 255, 66, 235, 182, 56, 173, 47, 48, 179, 6 },
+                            Role = "Admin",
+                            Username = "admin"
                         },
                         new
                         {
                             UserId = 2,
-                            Email = "user",
-                            PasswordHash = new byte[] { 199, 5, 58, 1, 107, 224, 17, 72, 228, 77, 77, 175, 90, 84, 21, 128, 160, 200, 1, 10, 2, 113, 143, 4, 189, 145, 196, 103, 216, 102, 164, 203, 92, 56, 235, 198, 187, 97, 209, 180, 49, 32, 125, 139, 110, 160, 134, 24, 244, 184, 41, 210, 16, 49, 74, 216, 254, 58, 124, 38, 77, 194, 42, 66 },
-                            PasswordSalt = new byte[] { 192, 105, 204, 89, 28, 143, 203, 96, 85, 143, 109, 111, 96, 35, 111, 44, 46, 253, 3, 122, 69, 141, 160, 0, 97, 194, 97, 19, 26, 62, 185, 6, 13, 9, 184, 71, 193, 192, 196, 47, 125, 201, 73, 79, 52, 169, 11, 58, 9, 66, 126, 99, 176, 131, 54, 214, 151, 15, 85, 48, 90, 242, 106, 73, 98, 223, 7, 231, 93, 184, 42, 33, 12, 212, 34, 57, 225, 18, 124, 52, 172, 108, 131, 142, 178, 140, 222, 199, 207, 44, 173, 125, 86, 198, 221, 211, 114, 172, 222, 108, 212, 117, 186, 204, 251, 71, 210, 51, 112, 223, 28, 73, 222, 133, 213, 86, 65, 222, 188, 73, 91, 121, 72, 28, 121, 187, 127, 160 },
-                            Role = "User"
+                            PasswordHash = new byte[] { 169, 178, 239, 70, 74, 207, 195, 209, 193, 121, 215, 188, 22, 176, 198, 144, 248, 58, 167, 20, 159, 13, 160, 152, 9, 138, 159, 91, 3, 73, 226, 236, 86, 175, 107, 236, 50, 101, 252, 131, 208, 50, 126, 254, 30, 52, 158, 66, 74, 58, 145, 152, 228, 115, 67, 163, 210, 133, 75, 100, 175, 204, 221, 155 },
+                            PasswordSalt = new byte[] { 48, 98, 240, 87, 252, 45, 202, 82, 140, 30, 249, 48, 199, 103, 10, 225, 199, 176, 46, 35, 225, 89, 131, 100, 1, 186, 50, 108, 153, 54, 105, 227, 61, 98, 66, 182, 69, 143, 129, 98, 87, 82, 244, 99, 64, 248, 174, 179, 199, 240, 154, 132, 176, 34, 157, 8, 201, 221, 73, 160, 108, 68, 4, 183, 123, 9, 70, 10, 245, 180, 70, 178, 247, 248, 12, 45, 15, 133, 87, 198, 180, 83, 156, 108, 169, 121, 133, 157, 196, 35, 59, 121, 174, 116, 182, 180, 101, 228, 222, 192, 251, 70, 42, 124, 246, 33, 15, 83, 5, 59, 106, 204, 200, 215, 80, 229, 255, 44, 172, 248, 59, 235, 139, 176, 208, 213, 59, 10 },
+                            Role = "User",
+                            Username = "user"
                         });
                 });
 
@@ -195,15 +179,6 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.EmployeeModel", null)
                         .WithMany("Salaries")
                         .HasForeignKey("EmployeeModelEmployeeID");
-                });
-
-            modelBuilder.Entity("Backend.Models.User", b =>
-                {
-                    b.HasOne("Backend.Models.CompanyModel", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyID");
-
-                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("Backend.Models.EmployeeModel", b =>

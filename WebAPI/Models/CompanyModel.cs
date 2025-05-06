@@ -18,6 +18,12 @@ public class CompanyModel
     [Required]
     [EmailAddress]
     public required string Email { get; set; } // Company's email address
-    
-    public required string PasswordHash { get; set; } // Hashed password
+
+    public byte[]? PasswordHash { get; set; }
+
+    public byte[]? PasswordSalt { get; set; }
+
+    public string? ResetPasswordToken { get; set; }
+
+    public DateTime? ResetPasswordTokenExpiry { get; set; }
 }
