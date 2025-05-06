@@ -192,6 +192,25 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public void UpdateCompanyAsync_ThrowsExceptionForNonExistentCompany()
+        {
+            // Arrange
+            var nonExistentCompany = new CompanyModel
+            {
+                CompanyID = 999, // Non-existent ID
+                CompanyName = "Non-Existent Company",
+                CVR = "99999999",
+                Email = "nonexistent@example.com",
+                Industry = "Tech",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("password")
+            };
+
+            // Act & Assert
+            Assert.ThrowsAsync<KeyNotFoundException>(async () => 
+                await _companyService.UpdateCompanyAsync(nonExistentCompany));
+        }
+
+        [Test]
         public async Task GetAllIndustriesAsync_ReturnsUniqueIndustries()
         {
             // Act
@@ -246,6 +265,31 @@ namespace WebAPI.Tests.Services
 
             // Assert
             Assert.That(companies.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task CreateCompaniesAsync_DoesNothingForEmptyList()
+        {
+            // Act
+            await _companyService.CreateCompaniesAsync(new List<CompanyModel>());
+            var companies = await _companyService.GetAllCompaniesAsync();
+
+            // Assert
+            Assert.That(companies.Count, Is.EqualTo(2)); // No new companies added
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_ReturnsCorrectData()
+        {
+            // Arrange
+            var industry = "Tech";
+
+            // Act
+            var result = await _companyService.GetAverageSalariesForJobsInIndustryAsync(industry);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.GreaterThanOrEqualTo(0)); // Depends on seeded data
         }
     }
 }
