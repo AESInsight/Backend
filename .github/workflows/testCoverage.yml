@@ -25,66 +25,39 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Debug .NET environment
-        run: |
-          dotnet --version
-          dotnet --info
-        if: always()
-
-      - name: Debug project structure
-        run: |
-          pwd
-          ls -la
-          ls -la ./WebAPI.Tests || echo "WebAPI.Tests directory not found"
-          find . -name "*.csproj"
-        if: always()
-
       - name: Restore dependencies
         run: dotnet restore ./WebAPI.Tests/WebAPI.Tests.csproj
-        continue-on-error: true
-
-      - name: Debug after restore
-        run: ls -la ./WebAPI.Tests
-        if: always()
-
-      - name: Debug test project contents
-        run: |
-          find ./WebAPI.Tests -name "*.cs" -exec grep -H "Test" {} \;
-        if: always()
 
       - name: Run tests with coverage
         run: |
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
-            /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./WebAPI.Tests/TestResults/coverage.opencover.xml \
-            --logger "trx;LogFileName=./WebAPI.Tests/TestResults/test-results.trx" \
-            --verbosity detailed
-        continue-on-error: true
+            --collect:"XPlat Code Coverage" \
+            --logger "trx;LogFileName=TestResults/test-results.trx"
 
-      - name: Debug test output
-        run: cat ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/test-results.trx || echo "No TRX file found"
-        if: always()
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
-      - name: Debug generated files
+      - name: Generate HTML coverage report
         run: |
-          ls -la ./WebAPI.Tests/TestResults || echo "TestResults directory not found"
-          ls -la ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults || echo "Nested TestResults directory not found"
-          find . -name "*.trx"
-          find . -name "*.xml"
-          find . -name "coverage.*"
-        if: always()
+          reportgenerator \
+            -reports:"**/coverage.cobertura.xml" \
+            -targetdir:"coverage-report" \
+            -reporttypes:Html
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/test-results.trx
-        if: always()
+          path: '**/test-results.trx'
 
-      - name: Upload coverage report
+      - name: Upload coverage report (cobertura)
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/coverage.opencover.xml
-        if: always()
+          name: cobertura-coverage
+          path: '**/coverage.cobertura.xml'
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-coverage-report
+          path: coverage-report
