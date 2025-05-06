@@ -384,27 +384,21 @@ public class EmployeeController : ControllerBase
                 return BadRequest(new { error = "Invalid employee ID" });
             }
 
-            var employee = await _dbContext.Employee
-                .Include(e => e.Company)
-                .FirstOrDefaultAsync(e => e.EmployeeID == id);
+            var employeeIndustryDto = await _dbContext.Employee
+                .Where(e => e.EmployeeID == id)
+                .Select(e => new EmployeeIndustryDto
+                {
+                    EmployeeID = e.EmployeeID,
+                    JobTitle = e.JobTitle,
+                    CompanyID = e.CompanyID,
+                    Industry = e.Company.Industry
+                })
+                .FirstOrDefaultAsync();
 
-            if (employee == null)
+            if (employeeIndustryDto == null)
             {
-                return NotFound(new { error = $"Employee with ID {id} not found" });
+                return NotFound(new { error = $"Employee with ID {id} not found or company information is missing" });
             }
-
-            if (employee.Company == null)
-            {
-                return NotFound(new { error = $"Company information not found for employee with ID {id}" });
-            }
-
-            var employeeIndustryDto = new EmployeeIndustryDto
-            {
-                EmployeeID = employee.EmployeeID,
-                JobTitle = employee.JobTitle,
-                CompanyID = employee.CompanyID,
-                Industry = employee.Company.Industry
-            };
 
             return Ok(employeeIndustryDto);
         }
@@ -413,4 +407,5 @@ public class EmployeeController : ControllerBase
             return StatusCode(500, new { error = "An error occurred while retrieving the employee's industry", details = ex.Message });
         }
     }
+
 }
