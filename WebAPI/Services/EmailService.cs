@@ -32,6 +32,13 @@ public class EmailService : IEmailService
             return;
         }
 
+        var skipSmtp = _configuration.GetValue<bool>("SkipSmtp");
+        if (skipSmtp)
+        {
+            _logger.LogInformation("Skipping SMTP connection in test environment.");
+            return;
+        }
+
         var smtpSettings = _configuration.GetSection("SmtpSettings");
         var smtpServer = smtpSettings["Server"];
         var smtpPort = 587;
@@ -79,4 +86,4 @@ public class EmailService : IEmailService
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
     }
-} 
+}
