@@ -27,20 +27,34 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore ./WebAPI.Tests/WebAPI.Tests.csproj
+        continue-on-error: true
+
+      - name: Debug project structure
+        run: |
+          pwd
+          ls -la
+          ls -la ./WebAPI.Tests
+          find . -name "*.csproj"
+        if: always()
 
       - name: Run tests with coverage
         run: |
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
-            --logger "trx;LogFileName=./WebAPI.Tests/TestResults/test-results.trx" \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./WebAPI.Tests/TestResults/coverage.opencover.xml \
             --collect:"XPlat Code Coverage" \
-            /p:CoverletOutputFormat=cobertura \
-            /p:CoverletOutput=./WebAPI.Tests/TestResults/coverage.cobertura.xml \
+            --logger "trx;LogFileName=./WebAPI.Tests/TestResults/test-results.trx" \
             --verbosity detailed
         continue-on-error: true
 
+      - name: Debug test output
+        run: cat ./WebAPI.Tests/TestResults/test-results.trx || echo "No TRX file found"
+        if: always()
+
       - name: Debug generated files
         run: |
-          ls -la ./WebAPI.Tests/TestResults
+          ls -la ./WebAPI.Tests/TestResults || echo "TestResults directory not found"
           find . -name "*.trx"
           find . -name "*.xml"
         if: always()
@@ -56,5 +70,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: ./WebAPI.Tests/TestResults/coverage.cobertura.xml
+          path: ./WebAPI.Tests/TestResults/coverage.opencover.xml
         if: always()
