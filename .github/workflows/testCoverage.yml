@@ -58,7 +58,6 @@ jobs:
             /p:CollectCoverage=true \
             /p:CoverletOutputFormat=opencover \
             /p:CoverletOutput=./WebAPI.Tests/TestResults/coverage.opencover.xml \
-            --collect:"XPlat Code Coverage" \
             --logger "trx;LogFileName=./WebAPI.Tests/TestResults/test-results.trx" \
             --verbosity detailed
         continue-on-error: true
