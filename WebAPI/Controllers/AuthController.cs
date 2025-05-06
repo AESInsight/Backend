@@ -42,11 +42,10 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // Check if Email/email already exists in users or companies
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email) ||
-                await _context.Companies.AnyAsync(c => c.Email == request.Email))
+            // Check if Email already exists in users
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             {
-                return BadRequest(new { message = "Email/Email already exists" });
+                return BadRequest(new { message = "Email already exists as a user" });
             }
 
             int? companyId = request.CompanyID;

@@ -4,6 +4,8 @@ using Backend.Data;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Backend.Models.DTO;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace Backend.Services;
 
