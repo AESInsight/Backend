@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
     branches:
       - main
@@ -25,7 +26,17 @@ jobs:
         run: dotnet restore ./WebAPI.Tests/WebAPI.Tests.csproj
 
       - name: Run tests with coverage
-        run: dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj --collect:"XPlat Code Coverage" /p:CoverletOutputFormat=cobertura
+        run: |
+          dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
+            --logger "trx;LogFileName=test-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            /p:CoverletOutputFormat=cobertura
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: "**/test-results.trx"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
