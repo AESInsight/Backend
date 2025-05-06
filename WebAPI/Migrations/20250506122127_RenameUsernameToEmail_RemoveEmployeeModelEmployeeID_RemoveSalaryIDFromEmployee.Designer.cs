@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250506122127_RenameUsernameToEmail_RemoveEmployeeModelEmployeeID_RemoveSalaryIDFromEmployee")]
+    partial class RenameUsernameToEmail_RemoveEmployeeModelEmployeeID_RemoveSalaryIDFromEmployee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,9 +94,6 @@ namespace Backend.Migrations
                     b.Property<int>("EmployeeID")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmployeeModelEmployeeID")
-                        .HasColumnType("int");
-
                     b.Property<double>("Salary")
                         .HasColumnType("double");
 
@@ -101,8 +101,6 @@ namespace Backend.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("SalaryID");
-
-                    b.HasIndex("EmployeeModelEmployeeID");
 
                     b.ToTable("Salaries");
                 });
@@ -182,7 +180,7 @@ namespace Backend.Migrations
                 {
                     b.HasOne("Backend.Models.EmployeeModel", null)
                         .WithMany("Salaries")
-                        .HasForeignKey("EmployeeModelEmployeeID");
+                        .HasForeignKey("EmployeeID");
                 });
 
             modelBuilder.Entity("Backend.Models.User", b =>
