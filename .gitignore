@@ -44,23 +44,9 @@ out/
 _ReSharper*/
 *.DotSettings.user
 
-# Test results
-TestResults/
-
-# Test results (uncomment to include them in Git)
-# TestResults/
-
 # Nuke build
 /build/
 temp/
-
-# Coverage tools
-coverage/
-*.coverage
-*.coveragexml
-
-# Coverage tools (uncomment to include coverage reports)
-# coverage/
 
 # Local http files
 *.http
