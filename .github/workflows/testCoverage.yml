@@ -47,6 +47,11 @@ jobs:
         run: ls -la ./WebAPI.Tests
         if: always()
 
+      - name: Debug test project contents
+        run: |
+          find ./WebAPI.Tests -name "*.cs" -exec grep -H "Test" {} \;
+        if: always()
+
       - name: Run tests with coverage
         run: |
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
@@ -59,12 +64,13 @@ jobs:
         continue-on-error: true
 
       - name: Debug test output
-        run: cat ./WebAPI.Tests/TestResults/*/test-results.trx || echo "No TRX file found"
+        run: cat ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/test-results.trx || echo "No TRX file found"
         if: always()
 
       - name: Debug generated files
         run: |
           ls -la ./WebAPI.Tests/TestResults || echo "TestResults directory not found"
+          ls -la ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults || echo "Nested TestResults directory not found"
           find . -name "*.trx"
           find . -name "*.xml"
           find . -name "coverage.*"
@@ -74,12 +80,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ./WebAPI.Tests/TestResults/*/test-results.trx
+          path: ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/test-results.trx
         if: always()
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: ./WebAPI.Tests/TestResults/*/coverage.opencover.xml
+          path: ./WebAPI.Tests/TestResults/WebAPI.Tests/TestResults/*/coverage.opencover.xml
         if: always()
