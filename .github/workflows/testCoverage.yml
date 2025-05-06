@@ -25,16 +25,26 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore dependencies
-        run: dotnet restore ./WebAPI.Tests/WebAPI.Tests.csproj
-        continue-on-error: true
+      - name: Debug .NET environment
+        run: |
+          dotnet --version
+          dotnet --info
+        if: always()
 
       - name: Debug project structure
         run: |
           pwd
           ls -la
-          ls -la ./WebAPI.Tests
+          ls -la ./WebAPI.Tests || echo "WebAPI.Tests directory not found"
           find . -name "*.csproj"
+        if: always()
+
+      - name: Restore dependencies
+        run: dotnet restore ./WebAPI.Tests/WebAPI.Tests.csproj
+        continue-on-error: true
+
+      - name: Debug after restore
+        run: ls -la ./WebAPI.Tests
         if: always()
 
       - name: Run tests with coverage
@@ -49,7 +59,7 @@ jobs:
         continue-on-error: true
 
       - name: Debug test output
-        run: cat ./WebAPI.Tests/TestResults/test-results.trx || echo "No TRX file found"
+        run: cat ./WebAPI.Tests/TestResults/*/test-results.trx || echo "No TRX file found"
         if: always()
 
       - name: Debug generated files
@@ -57,18 +67,19 @@ jobs:
           ls -la ./WebAPI.Tests/TestResults || echo "TestResults directory not found"
           find . -name "*.trx"
           find . -name "*.xml"
+          find . -name "coverage.*"
         if: always()
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ./WebAPI.Tests/TestResults/test-results.trx
+          path: ./WebAPI.Tests/TestResults/*/test-results.trx
         if: always()
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: ./WebAPI.Tests/TestResults/coverage.opencover.xml
+          path: ./WebAPI.Tests/TestResults/*/coverage.opencover.xml
         if: always()
