@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250505064115_AddResetPasswordFieldsToUser")]
+    partial class AddResetPasswordFieldsToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,21 +155,16 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-
                             PasswordHash = new byte[] { 176, 167, 142, 33, 245, 16, 111, 25, 162, 177, 106, 93, 113, 172, 188, 168, 100, 154, 231, 34, 21, 165, 193, 43, 106, 112, 180, 20, 202, 208, 165, 248, 153, 25, 245, 189, 11, 205, 25, 0, 209, 149, 163, 42, 14, 247, 135, 140, 102, 15, 231, 28, 147, 186, 38, 61, 106, 196, 162, 197, 64, 133, 43, 179 },
                             PasswordSalt = new byte[] { 67, 5, 92, 80, 12, 108, 38, 19, 145, 37, 186, 64, 52, 33, 21, 38, 73, 101, 187, 91, 201, 53, 1, 96, 171, 216, 163, 37, 72, 110, 193, 14, 190, 40, 4, 176, 237, 198, 66, 111, 160, 209, 237, 143, 243, 2, 33, 166, 176, 112, 242, 240, 86, 0, 65, 137, 33, 169, 143, 95, 179, 96, 155, 103, 153, 112, 31, 188, 141, 127, 189, 151, 70, 154, 50, 210, 211, 122, 202, 243, 31, 21, 77, 94, 93, 166, 42, 165, 73, 102, 52, 44, 93, 17, 247, 63, 196, 195, 183, 16, 180, 86, 113, 164, 132, 195, 27, 26, 182, 188, 191, 161, 203, 67, 183, 97, 65, 109, 21, 123, 66, 149, 211, 149, 240, 97, 177, 170 },
-
-                          
                             Role = "Admin",
                             Username = "admin"
                         },
                         new
                         {
                             UserId = 2,
-
                             PasswordHash = new byte[] { 196, 4, 66, 117, 175, 69, 137, 223, 198, 156, 14, 187, 214, 13, 8, 203, 5, 15, 120, 82, 33, 155, 190, 90, 4, 40, 115, 112, 49, 198, 138, 213, 133, 246, 187, 113, 163, 196, 248, 178, 158, 209, 178, 57, 72, 55, 121, 53, 62, 95, 121, 250, 89, 133, 149, 155, 148, 215, 118, 65, 108, 252, 254, 252 },
                             PasswordSalt = new byte[] { 125, 115, 186, 39, 24, 220, 46, 233, 186, 234, 3, 62, 163, 84, 27, 41, 203, 235, 148, 112, 236, 160, 113, 113, 132, 120, 97, 255, 53, 56, 152, 228, 61, 25, 121, 165, 3, 98, 30, 86, 9, 56, 167, 35, 42, 220, 200, 170, 52, 58, 205, 234, 96, 116, 66, 44, 221, 170, 162, 88, 176, 11, 183, 224, 47, 208, 188, 79, 79, 83, 72, 107, 48, 172, 29, 215, 149, 146, 233, 191, 143, 155, 16, 203, 98, 57, 23, 74, 209, 121, 129, 32, 150, 133, 162, 33, 220, 21, 165, 184, 162, 228, 123, 224, 255, 201, 234, 80, 102, 120, 25, 178, 213, 101, 156, 42, 96, 196, 237, 62, 163, 83, 107, 97, 170, 90, 214, 65 },
-                           
                             Role = "User",
                             Username = "user"
                         });
@@ -189,7 +187,6 @@ namespace Backend.Migrations
                         .WithMany("Salaries")
                         .HasForeignKey("EmployeeModelEmployeeID");
                 });
-
 
             modelBuilder.Entity("Backend.Models.User", b =>
                 {
