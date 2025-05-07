@@ -16,21 +16,21 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore ./WebAPI/Backend.csproj
+        run: dotnet restore ./WebAPI/WebAPI.csproj
 
       - name: Build the project
-        run: dotnet build ./WebAPI/Backend.csproj --configuration Release
+        run: dotnet build ./WebAPI/WebAPI.csproj --configuration Release
 
       - name: Publish the project
-        run: dotnet publish ./WebAPI/Backend.csproj --configuration Release --output ./WebAPI/publish
+        run: dotnet publish ./WebAPI/WebAPI.csproj --configuration Release --output ./WebAPI/publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: aes-backend     
+          app-name: aes-backend
           slot-name: Production
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ./WebAPI/publish

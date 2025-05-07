@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/AESInsight/Backend/compare/v1.9.2...v1.9.3) (2025-05-07)
+
+
+### Bug Fixes
+
+* deploy using correct paths ([e189cae](https://github.com/AESInsight/Backend/commit/e189cae8d8f2358989576ee10088390c507a947e))
+
 ## [1.9.2](https://github.com/AESInsight/Backend/compare/v1.9.1...v1.9.2) (2025-05-07)
 
 
