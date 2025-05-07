@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/AESInsight/Backend/compare/v1.9.1...v1.9.2) (2025-05-07)
+
+
+### Bug Fixes
+
+* fixes azure deployment in relation to environments ([ae2b553](https://github.com/AESInsight/Backend/commit/ae2b553cd4462c60acc6f95c0a9feed7e9eddf16))
+
 ## [1.9.1](https://github.com/AESInsight/Backend/compare/v1.9.0...v1.9.1) (2025-04-30)
 
 
