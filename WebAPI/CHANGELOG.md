@@ -1,3 +1,10 @@
+## [1.9.4](https://github.com/AESInsight/Backend/compare/v1.9.3...v1.9.4) (2025-05-08)
+
+
+### Bug Fixes
+
+* query getAverageSalaryForJobsIn{industry} and getAllIndustries by removing EmployeeModelEmployeeID ([855626f](https://github.com/AESInsight/Backend/commit/855626fdb2cc0c95971fd77ab9746de30fdb0778))
+
 ## [1.9.3](https://github.com/AESInsight/Backend/compare/v1.9.2...v1.9.3) (2025-05-07)
 
 
