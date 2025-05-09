@@ -74,29 +74,27 @@ public class CompanyController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyDTO> companyDTOs)
     {
-        try
+        if (companyDTOs == null || !companyDTOs.Any())
         {
-            if (companyDTOs == null || !companyDTOs.Any())
-            {
-                return BadRequest(new { message = "No companies provided" });
-            }
-
-            var companies = companyDTOs.Select(dto => new CompanyModel
-            {
-                CompanyName = dto.CompanyName,
-                Industry = dto.Industry,
-                CVR = dto.CVR,
-                Email = dto.Email,
-                PasswordHash = dto.PasswordHash 
-            }).ToList();
-
-            await _companyService.CreateCompaniesAsync(companies);
-            return Ok(new { message = "Companies inserted successfully", count = companies.Count });
+            return BadRequest(new { message = "No companies provided" });
         }
-        catch (Exception ex)
+
+        var companies = companyDTOs.Select(dto => new CompanyModel
         {
-            return StatusCode(500, new { error = "An error occurred while inserting companies", details = ex.Message });
-        }
+            CompanyName = dto.CompanyName,
+            Industry = dto.Industry,
+            CVR = dto.CVR,
+            Email = dto.Email,
+            PasswordHash = dto.PasswordHash
+        }).ToList();
+
+        await _companyService.CreateCompaniesAsync(companies);
+
+        return Ok(new Dictionary<string, object>
+        {
+            { "message", "Companies inserted successfully" },
+            { "count", companies.Count }
+        });
     }
 
     // PUT: api/company/{id}
