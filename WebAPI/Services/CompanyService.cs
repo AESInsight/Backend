@@ -144,7 +144,7 @@ public class CompanyService : ICompanyService
         return await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == email);
     }
 
-    public async Task<bool> VerifyPasswordAsync(string email, string password)
+    public Task<bool> VerifyPasswordAsync(string email, string password)
     {
         throw new NotSupportedException("Password verification is not supported in this service.");
     }

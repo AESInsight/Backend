@@ -101,7 +101,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeModel> DeleteEmployeeAsync(int id)
     {
-        var employee = _context.Employee.Find(id);
+        var employee = await _context.Employee.FindAsync(id); // Use await here
         if (employee == null)
         {
             throw new KeyNotFoundException($"Employee with ID {id} not found.");
@@ -110,10 +110,7 @@ public class EmployeeService : IEmployeeService
         _context.Employee.Remove(employee);
         await _context.SaveChangesAsync(); // Await the save operation
 
-        _context.Employee.Remove(employee);
-        _context.SaveChangesAsync();
-
-        return Task.FromResult(employee);
+        return employee; // Return the employee directly
     }
 
     public async Task<List<string>> GetAllJobTitlesAsync()
