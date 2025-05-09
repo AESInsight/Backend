@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/AESInsight/Backend/compare/v1.9.4...v1.10.0) (2025-05-09)
+
+
+### Features
+
+* adds employeeDTO and EmployeeModel ([40d7eac](https://github.com/AESInsight/Backend/commit/40d7eacbb2f5fc23f6b60606d540fa01f1667a07))
+
 ## [1.9.4](https://github.com/AESInsight/Backend/compare/v1.9.3...v1.9.4) (2025-05-08)
 
 
