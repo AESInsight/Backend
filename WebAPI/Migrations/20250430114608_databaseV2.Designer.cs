@@ -4,6 +4,7 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430114608_databaseV2")]
+    partial class databaseV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,17 +51,9 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .HasColumnType("longblob");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .HasColumnType("longblob");
-
-                    b.Property<string>("ResetPasswordToken")
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("CompanyID");
 
@@ -103,6 +98,9 @@ namespace Backend.Migrations
                     b.Property<int>("EmployeeID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmployeeModelEmployeeID")
+                        .HasColumnType("int");
+
                     b.Property<double>("Salary")
                         .HasColumnType("double");
 
@@ -110,6 +108,8 @@ namespace Backend.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("SalaryID");
+
+                    b.HasIndex("EmployeeModelEmployeeID");
 
                     b.ToTable("Salaries");
                 });
@@ -122,14 +122,6 @@ namespace Backend.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
 
-                    b.Property<int?>("CompanyID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longblob");
@@ -138,20 +130,17 @@ namespace Backend.Migrations
                         .IsRequired()
                         .HasColumnType("longblob");
 
-                    b.Property<string>("ResetPasswordToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("ResetPasswordTokenExpiry")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.HasKey("UserId");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
-                    b.HasIndex("CompanyID");
+                    b.HasKey("UserId");
 
                     b.ToTable("Users");
 
@@ -159,18 +148,18 @@ namespace Backend.Migrations
                         new
                         {
                             UserId = 1,
-                            Email = "admin",
-                            PasswordHash = new byte[] { 210, 198, 63, 106, 91, 239, 213, 125, 251, 174, 101, 165, 19, 7, 45, 193, 193, 125, 189, 12, 93, 65, 161, 139, 8, 228, 202, 243, 58, 247, 88, 46, 209, 204, 19, 226, 177, 237, 132, 255, 242, 155, 199, 70, 73, 221, 196, 143, 143, 125, 12, 178, 96, 101, 84, 109, 241, 65, 39, 95, 111, 51, 182, 190 },
-                            PasswordSalt = new byte[] { 94, 24, 1, 5, 250, 20, 204, 115, 173, 238, 143, 248, 71, 11, 110, 255, 127, 80, 131, 69, 181, 145, 168, 86, 87, 73, 204, 142, 85, 228, 84, 55, 100, 10, 128, 110, 255, 130, 23, 123, 58, 149, 12, 219, 113, 18, 16, 183, 58, 194, 68, 232, 68, 189, 115, 71, 242, 167, 36, 203, 135, 156, 93, 35, 177, 31, 221, 26, 99, 123, 152, 226, 233, 143, 87, 79, 196, 252, 123, 132, 14, 164, 51, 184, 4, 120, 247, 191, 74, 80, 179, 150, 225, 164, 159, 43, 15, 28, 53, 42, 238, 25, 53, 21, 208, 151, 200, 14, 24, 110, 191, 140, 199, 21, 31, 2, 222, 234, 253, 46, 216, 43, 211, 97, 176, 152, 93, 163 },
-                            Role = "Admin"
+                            PasswordHash = new byte[] { 38, 199, 242, 244, 192, 43, 175, 111, 47, 127, 228, 88, 234, 54, 197, 214, 201, 8, 158, 28, 215, 233, 136, 200, 112, 26, 101, 48, 245, 130, 158, 68, 153, 56, 158, 118, 166, 87, 205, 80, 211, 255, 28, 31, 227, 13, 9, 30, 240, 222, 28, 150, 91, 177, 23, 104, 175, 94, 251, 131, 16, 114, 39, 234 },
+                            PasswordSalt = new byte[] { 167, 122, 67, 22, 17, 244, 185, 192, 119, 188, 208, 12, 116, 120, 68, 62, 175, 113, 132, 73, 29, 125, 27, 121, 102, 20, 175, 71, 228, 133, 55, 82, 173, 188, 3, 34, 208, 145, 21, 157, 187, 1, 204, 49, 174, 59, 122, 185, 96, 24, 51, 101, 177, 167, 142, 69, 102, 161, 37, 68, 213, 95, 7, 194, 192, 181, 180, 18, 87, 104, 130, 64, 185, 79, 207, 187, 94, 126, 61, 133, 27, 61, 208, 45, 3, 144, 210, 7, 73, 51, 210, 238, 174, 57, 151, 10, 225, 133, 129, 195, 28, 124, 230, 82, 150, 13, 178, 166, 23, 180, 68, 116, 159, 102, 204, 24, 243, 236, 255, 66, 235, 182, 56, 173, 47, 48, 179, 6 },
+                            Role = "Admin",
+                            Username = "admin"
                         },
                         new
                         {
                             UserId = 2,
-                            Email = "user",
-                            PasswordHash = new byte[] { 192, 217, 165, 65, 189, 214, 26, 220, 89, 7, 21, 234, 237, 224, 187, 108, 177, 104, 121, 38, 169, 185, 85, 227, 144, 62, 31, 42, 71, 160, 21, 106, 134, 237, 219, 153, 0, 50, 35, 138, 93, 79, 86, 11, 176, 209, 208, 182, 54, 227, 188, 198, 46, 229, 91, 121, 226, 5, 93, 243, 38, 71, 35, 223 },
-                            PasswordSalt = new byte[] { 236, 34, 30, 147, 150, 69, 109, 5, 190, 152, 204, 73, 95, 84, 199, 197, 255, 140, 171, 50, 78, 178, 70, 172, 212, 49, 41, 100, 142, 222, 142, 78, 119, 217, 154, 80, 142, 156, 163, 238, 47, 50, 58, 67, 112, 137, 27, 212, 170, 156, 133, 71, 154, 224, 178, 141, 50, 36, 19, 176, 184, 197, 229, 19, 231, 120, 205, 162, 0, 45, 250, 134, 233, 146, 161, 82, 214, 25, 208, 255, 109, 73, 78, 3, 239, 26, 209, 143, 84, 215, 60, 58, 188, 105, 83, 7, 194, 205, 50, 202, 80, 251, 98, 134, 115, 44, 195, 235, 203, 243, 180, 91, 21, 126, 120, 90, 226, 65, 13, 104, 123, 160, 53, 44, 238, 246, 249, 83 },
-                            Role = "User"
+                            PasswordHash = new byte[] { 169, 178, 239, 70, 74, 207, 195, 209, 193, 121, 215, 188, 22, 176, 198, 144, 248, 58, 167, 20, 159, 13, 160, 152, 9, 138, 159, 91, 3, 73, 226, 236, 86, 175, 107, 236, 50, 101, 252, 131, 208, 50, 126, 254, 30, 52, 158, 66, 74, 58, 145, 152, 228, 115, 67, 163, 210, 133, 75, 100, 175, 204, 221, 155 },
+                            PasswordSalt = new byte[] { 48, 98, 240, 87, 252, 45, 202, 82, 140, 30, 249, 48, 199, 103, 10, 225, 199, 176, 46, 35, 225, 89, 131, 100, 1, 186, 50, 108, 153, 54, 105, 227, 61, 98, 66, 182, 69, 143, 129, 98, 87, 82, 244, 99, 64, 248, 174, 179, 199, 240, 154, 132, 176, 34, 157, 8, 201, 221, 73, 160, 108, 68, 4, 183, 123, 9, 70, 10, 245, 180, 70, 178, 247, 248, 12, 45, 15, 133, 87, 198, 180, 83, 156, 108, 169, 121, 133, 157, 196, 35, 59, 121, 174, 116, 182, 180, 101, 228, 222, 192, 251, 70, 42, 124, 246, 33, 15, 83, 5, 59, 106, 204, 200, 215, 80, 229, 255, 44, 172, 248, 59, 235, 139, 176, 208, 213, 59, 10 },
+                            Role = "User",
+                            Username = "user"
                         });
                 });
 
@@ -189,16 +178,7 @@ namespace Backend.Migrations
                 {
                     b.HasOne("Backend.Models.EmployeeModel", null)
                         .WithMany("Salaries")
-                        .HasForeignKey("EmployeeID");
-                });
-
-            modelBuilder.Entity("Backend.Models.User", b =>
-                {
-                    b.HasOne("Backend.Models.CompanyModel", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyID");
-
-                    b.Navigation("Company");
+                        .HasForeignKey("EmployeeModelEmployeeID");
                 });
 
             modelBuilder.Entity("Backend.Models.EmployeeModel", b =>

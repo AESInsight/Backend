@@ -1,5 +1,5 @@
 using Backend.Models;
-using Backend.Models.DTOs;
+using Backend.Models.DTO;
 
 namespace Backend.Services;
 

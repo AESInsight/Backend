@@ -57,7 +57,7 @@ public class ApplicationDbContext : DbContext
             new User
             {
                 UserId = 1,
-                Username = "admin",
+                Email = "admin",
                 PasswordHash = adminHmac.ComputeHash(Encoding.UTF8.GetBytes("adminpassword")),
                 PasswordSalt = adminHmac.Key,
                 Role = "Admin"
@@ -65,7 +65,7 @@ public class ApplicationDbContext : DbContext
             new User
             {
                 UserId = 2,
-                Username = "user",
+                Email = "user",
                 PasswordHash = userHmac.ComputeHash(Encoding.UTF8.GetBytes("userpassword")),
                 PasswordSalt = userHmac.Key,
                 Role = "User"
