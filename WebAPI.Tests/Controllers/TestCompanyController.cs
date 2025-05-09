@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Controllers
@@ -29,8 +30,24 @@ namespace WebAPI.Tests.Controllers
             // Arrange
             var companies = new List<CompanyModel>
             {
-                new CompanyModel { CompanyID = 1, CompanyName = "Company A", Industry = "Tech", CVR = "12345678", Email = "a@example.com", PasswordHash = "hash1" },
-                new CompanyModel { CompanyID = 2, CompanyName = "Company B", Industry = "Finance", CVR = "87654321", Email = "b@example.com", PasswordHash = "hash2" }
+                new CompanyModel
+                {
+                    CompanyID = 1,
+                    CompanyName = "Company A",
+                    Industry = "Tech",
+                    CVR = "12345678",
+                    Email = "a@example.com",
+                    PasswordHash = Encoding.UTF8.GetBytes("hash1") // Convert string to byte[]
+                },
+                new CompanyModel
+                {
+                    CompanyID = 2,
+                    CompanyName = "Company B",
+                    Industry = "Finance",
+                    CVR = "87654321",
+                    Email = "b@example.com",
+                    PasswordHash = Encoding.UTF8.GetBytes("hash2") // Convert string to byte[]
+                }
             };
             _companyServiceMock.Setup(s => s.GetAllCompaniesAsync()).ReturnsAsync(companies);
 
@@ -52,7 +69,7 @@ namespace WebAPI.Tests.Controllers
             // Arrange
             var companyDTOs = new List<CompanyDTO>
             {
-                new CompanyDTO { CompanyName = "Company A", Industry = "Tech", CVR = "12345678", Email = "a@example.com", PasswordHash = "hash1" }
+                new CompanyDTO { CompanyName = "Company A", Industry = "Tech", CVR = "12345678", Email = "a@example.com" }
             };
 
             // Mock the CreateCompaniesAsync method to simulate successful insertion
@@ -86,7 +103,7 @@ namespace WebAPI.Tests.Controllers
                 Industry = "Tech",
                 CVR = "12345678",
                 Email = "a@example.com",
-                PasswordHash = "hash1"
+                PasswordHash = Encoding.UTF8.GetBytes("password1")
             });
 
             // Act
@@ -111,7 +128,6 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result.StatusCode, Is.EqualTo(404));
             Assert.That(result.Value, Is.Not.Null);
 
-            // Cast the result.Value to a dictionary
             var error = result.Value as Dictionary<string, object>;
             Assert.That(error, Is.Not.Null);
             Assert.That(error["error"], Is.EqualTo("Company not found"));
@@ -128,7 +144,7 @@ namespace WebAPI.Tests.Controllers
                 Industry = "Tech",
                 CVR = "12345678",
                 Email = "a@example.com",
-                PasswordHash = "hash1"
+                PasswordHash = Encoding.UTF8.GetBytes("password1")
             };
 
             _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1)).ReturnsAsync(company);
@@ -158,6 +174,7 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(404));
             Assert.That(result.Value, Is.Not.Null);
+
             var error = result.Value as Dictionary<string, object>;
             Assert.That(error, Is.Not.Null);
             Assert.That(error["error"], Is.EqualTo("Company not found"));
@@ -174,7 +191,7 @@ namespace WebAPI.Tests.Controllers
                 Industry = "Tech",
                 CVR = "12345678",
                 Email = "updated@example.com",
-                PasswordHash = "updatedhash"
+                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
             };
 
             _companyServiceMock.Setup(s => s.UpdateCompanyAsync(company)).Returns(Task.CompletedTask);
@@ -198,7 +215,7 @@ namespace WebAPI.Tests.Controllers
                 Industry = "Tech",
                 CVR = "12345678",
                 Email = "updated@example.com",
-                PasswordHash = "updatedhash"
+                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
             };
 
             // Act
@@ -209,7 +226,6 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result.StatusCode, Is.EqualTo(400));
             Assert.That(result.Value, Is.Not.Null);
 
-            // Use dynamic to access the properties of the anonymous object
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("Invalid company data"));
@@ -228,6 +244,7 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
+
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("Sample companies generated successfully"));
@@ -247,7 +264,6 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
 
-            // Cast the result.Value to a dictionary
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("All companies deleted successfully"));

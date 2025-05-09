@@ -47,6 +47,14 @@ public class CompanyController : ControllerBase
         try
         {
             var company = await _companyService.GetCompanyByIdAsync(id);
+            if (company == null)
+            {
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", "Company not found" }
+                });
+            }
+
             var companyDTO = new CompanyDTO
             {
                 CompanyID = company.CompanyID,
@@ -60,11 +68,18 @@ public class CompanyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving the company", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving the company" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -102,7 +117,10 @@ public class CompanyController : ControllerBase
         {
             if (company == null || id != company.CompanyID)
             {
-                return BadRequest(new { message = "Invalid company data" });
+                return BadRequest(new Dictionary<string, object>
+                {
+                    { "message", "Invalid company data" }
+                });
             }
 
             await _companyService.UpdateCompanyAsync(company);
@@ -110,11 +128,18 @@ public class CompanyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating the company", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while updating the company" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -127,7 +152,10 @@ public class CompanyController : ControllerBase
             var existingCompany = await _companyService.GetCompanyByIdAsync(id);
             if (existingCompany == null)
             {
-                return NotFound(new { message = "Company not found" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", "Company not found" }
+                });
             }
 
             await _companyService.DeleteCompanyAsync(id);
@@ -135,11 +163,18 @@ public class CompanyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting the company", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while deleting the company" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -150,11 +185,18 @@ public class CompanyController : ControllerBase
         try
         {
             await _companyService.GenerateSampleCompaniesAsync();
-            return Ok(new { message = "Sample companies generated successfully" });
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "Sample companies generated successfully" }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while generating sample companies", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while generating sample companies" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -165,11 +207,18 @@ public class CompanyController : ControllerBase
         try
         {
             await _companyService.DeleteAllCompaniesAsync();
-            return Ok(new { message = "All companies deleted successfully" });
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "All companies deleted successfully" }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting all companies", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while deleting all companies" },
+                { "details", ex.Message }
+            });
         }
     }
 
