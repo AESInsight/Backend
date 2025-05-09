@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace WebAPI.Tests.Services
 {
@@ -36,7 +37,7 @@ namespace WebAPI.Tests.Services
                     Industry = "Technology",
                     CVR = "12345678",
                     Email = "contact@techcorp.com",
-                    PasswordHash = "hashedpassword1"
+                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword1") // Fixed to byte[]
                 },
                 new CompanyModel
                 {
@@ -45,7 +46,7 @@ namespace WebAPI.Tests.Services
                     Industry = "Data Analytics",
                     CVR = "87654321",
                     Email = "info@datacorp.com",
-                    PasswordHash = "hashedpassword2"
+                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword2") // Fixed to byte[]
                 }
             });
 

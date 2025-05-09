@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Services
@@ -53,7 +54,7 @@ namespace WebAPI.Tests.Services
                 Email = "test@example.com",
                 CVR = "12345678",
                 Industry = "Tech",
-                PasswordHash = "hashedpassword"
+                PasswordHash = Encoding.UTF8.GetBytes("hashedpassword1")
             });
 
             _dbContext.SaveChanges();

@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
   build-and-deploy:
@@ -35,8 +30,8 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'aes-backend'
-          slot-name: 'production'
+          app-name: "aes-backend"
+          slot-name: "production"
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ./publish
 

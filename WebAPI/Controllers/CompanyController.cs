@@ -29,8 +29,7 @@ public class CompanyController : ControllerBase
                 CompanyName = c.CompanyName,
                 Industry = c.Industry,
                 CVR = c.CVR,
-                Email = c.Email,
-                PasswordHash = c.PasswordHash
+                Email = c.Email
             }).ToList();
 
             return Ok(companyDTOs);
@@ -54,8 +53,7 @@ public class CompanyController : ControllerBase
                 CompanyName = company.CompanyName,
                 Industry = company.Industry,
                 CVR = company.CVR,
-                Email = company.Email,
-                PasswordHash = company.PasswordHash
+                Email = company.Email
             };
 
             return Ok(companyDTO);
@@ -79,14 +77,13 @@ public class CompanyController : ControllerBase
             return BadRequest(new { message = "No companies provided" });
         }
 
-        var companies = companyDTOs.Select(dto => new CompanyModel
-        {
-            CompanyName = dto.CompanyName,
-            Industry = dto.Industry,
-            CVR = dto.CVR,
-            Email = dto.Email,
-            PasswordHash = dto.PasswordHash
-        }).ToList();
+            var companies = companyDTOs.Select(dto => new CompanyModel
+            {
+                CompanyName = dto.CompanyName,
+                Industry = dto.Industry,
+                CVR = dto.CVR,
+                Email = dto.Email
+            }).ToList();
 
         await _companyService.CreateCompaniesAsync(companies);
 

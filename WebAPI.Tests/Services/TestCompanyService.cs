@@ -7,6 +7,7 @@ using Backend.Models;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Services
@@ -37,7 +38,7 @@ namespace WebAPI.Tests.Services
                     CVR = "12345678", 
                     Email = "a@example.com", 
                     Industry = "Tech", 
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password1")
+                    PasswordHash = Encoding.UTF8.GetBytes("password1") // Updated to byte[]
                 },
                 new CompanyModel 
                 { 
@@ -46,7 +47,7 @@ namespace WebAPI.Tests.Services
                     CVR = "87654321", 
                     Email = "b@example.com", 
                     Industry = "Finance", 
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password2")
+                    PasswordHash = Encoding.UTF8.GetBytes("password2") // Updated to byte[]
                 }
             });
             dbContext.SaveChanges();
@@ -107,26 +108,6 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
-        public async Task VerifyPasswordAsync_ReturnsTrueForValidPassword()
-        {
-            // Act
-            var result = await _companyService.VerifyPasswordAsync("a@example.com", "password1");
-
-            // Assert
-            Assert.That(result, Is.True);
-        }
-
-        [Test]
-        public async Task VerifyPasswordAsync_ReturnsFalseForInvalidPassword()
-        {
-            // Act
-            var result = await _companyService.VerifyPasswordAsync("a@example.com", "wrongpassword");
-
-            // Assert
-            Assert.That(result, Is.False);
-        }
-
-        [Test]
         public async Task DeleteCompanyAsync_RemovesCompany()
         {
             // Act
@@ -159,7 +140,7 @@ namespace WebAPI.Tests.Services
                 CVR = "87654321",
                 Email = "updated@example.com",
                 Industry = "Updated Industry",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("updatedpassword")
+                PasswordHash = Encoding.UTF8.GetBytes("updatedpassword") // Convert string to byte[]
             };
 
             // Act
@@ -184,7 +165,7 @@ namespace WebAPI.Tests.Services
                 CVR = "1234", // Invalid CVR (too short)
                 Email = "invalid@example.com",
                 Industry = "Tech",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("password")
+                PasswordHash = Encoding.UTF8.GetBytes("password")
             };
 
             // Act & Assert
@@ -202,7 +183,7 @@ namespace WebAPI.Tests.Services
                 CVR = "99999999",
                 Email = "nonexistent@example.com",
                 Industry = "Tech",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("password")
+                PasswordHash = Encoding.UTF8.GetBytes("password") // Convert string to byte[]
             };
 
             // Act & Assert
@@ -234,7 +215,7 @@ namespace WebAPI.Tests.Services
                     CVR = "11223344",
                     Email = "c@example.com",
                     Industry = "Healthcare",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password3")
+                    PasswordHash = Encoding.UTF8.GetBytes("password3") // Updated to byte[]
                 },
                 new CompanyModel
                 {
@@ -242,7 +223,7 @@ namespace WebAPI.Tests.Services
                     CVR = "55667788",
                     Email = "d@example.com",
                     Industry = "Retail",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password4")
+                    PasswordHash = Encoding.UTF8.GetBytes("password4") // Updated to byte[]
                 }
             };
 

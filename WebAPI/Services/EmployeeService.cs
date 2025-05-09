@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
 using Backend.Data;
-using Backend.Models.DTOs;
+using Backend.Models.DTO;
 
 namespace Backend.Services;
 
@@ -101,7 +101,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeModel> DeleteEmployeeAsync(int id)
     {
-        var employee = await _context.Employee.FindAsync(id); // Use FindAsync for async operation
+        var employee = await _context.Employee.FindAsync(id); // Use await here
         if (employee == null)
         {
             throw new KeyNotFoundException($"Employee with ID {id} not found.");
@@ -110,7 +110,7 @@ public class EmployeeService : IEmployeeService
         _context.Employee.Remove(employee);
         await _context.SaveChangesAsync(); // Await the save operation
 
-        return employee;
+        return employee; // Return the employee directly
     }
 
     public async Task<List<string>> GetAllJobTitlesAsync()
