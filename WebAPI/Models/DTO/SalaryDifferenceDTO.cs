@@ -1,4 +1,4 @@
-namespace Backend.Models.DTOs;
+namespace Backend.Models.DTO;
 
 public class SalaryDifferenceDTO
 {
