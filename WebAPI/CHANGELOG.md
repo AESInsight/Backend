@@ -1,3 +1,31 @@
+# [1.10.0](https://github.com/AESInsight/Backend/compare/v1.9.4...v1.10.0) (2025-05-09)
+
+
+### Features
+
+* adds employeeDTO and EmployeeModel ([40d7eac](https://github.com/AESInsight/Backend/commit/40d7eacbb2f5fc23f6b60606d540fa01f1667a07))
+
+## [1.9.4](https://github.com/AESInsight/Backend/compare/v1.9.3...v1.9.4) (2025-05-08)
+
+
+### Bug Fixes
+
+* query getAverageSalaryForJobsIn{industry} and getAllIndustries by removing EmployeeModelEmployeeID ([855626f](https://github.com/AESInsight/Backend/commit/855626fdb2cc0c95971fd77ab9746de30fdb0778))
+
+## [1.9.3](https://github.com/AESInsight/Backend/compare/v1.9.2...v1.9.3) (2025-05-07)
+
+
+### Bug Fixes
+
+* deploy using correct paths ([e189cae](https://github.com/AESInsight/Backend/commit/e189cae8d8f2358989576ee10088390c507a947e))
+
+## [1.9.2](https://github.com/AESInsight/Backend/compare/v1.9.1...v1.9.2) (2025-05-07)
+
+
+### Bug Fixes
+
+* fixes azure deployment in relation to environments ([ae2b553](https://github.com/AESInsight/Backend/commit/ae2b553cd4462c60acc6f95c0a9feed7e9eddf16))
+
 ## [1.9.1](https://github.com/AESInsight/Backend/compare/v1.9.0...v1.9.1) (2025-04-30)
 
 
