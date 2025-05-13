@@ -53,8 +53,7 @@ public class EmailService : IEmailService
                 <p> Token: <strong>{resetToken}</strong></p>
 
                 <div style='margin: 24px 0; text-align: center;'>
-                    <a href='https://aes-insight.dk/reset-password'
-
+                    <a href='https://aes-insight.dk/reset-password?token={resetToken}'
                         style='
                             display: inline-block;
                             background-color: #007bff;
@@ -85,4 +84,4 @@ public class EmailService : IEmailService
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
     }
-} 
+}
