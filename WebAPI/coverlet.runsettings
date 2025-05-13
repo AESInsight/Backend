@@ -1,0 +1,14 @@
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Exclude>
+            [WebAPI]WebAPI.Extensions.*
+            [WebAPI]WebAPI.Models.DTO.*
+          </Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings> 
