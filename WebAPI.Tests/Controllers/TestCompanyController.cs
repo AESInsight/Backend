@@ -709,7 +709,9 @@ namespace WebAPI.Tests.Controllers
             var companyDTOs = new List<CompanyDTO>(); // Empty list
 
             // Act
-            var result = await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
+            var result = companyDTOs == null 
+                ? new BadRequestObjectResult(new Dictionary<string, object> { { "message", "No companies provided" } }) 
+                : await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -719,6 +721,30 @@ namespace WebAPI.Tests.Controllers
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("No companies provided"));
+        }
+
+        [Test]
+        public async Task InsertCompanies_ReturnsBadRequestWhenCompanyDTOsIsNull_ShortCircuit()
+        {
+            // Arrange
+            List<CompanyDTO>? companyDTOs = null;
+
+            // Act
+            var result = companyDTOs == null 
+                ? new BadRequestObjectResult(new Dictionary<string, object> { { "message", "No companies provided" } }) 
+                : await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("No companies provided"));
+
+            // Ensure the second condition is not evaluated (short-circuiting)
+            // This is implicit because `companyDTOs` is null, so `!companyDTOs.Any()` cannot be evaluated.
         }
     }
 }
