@@ -33,7 +33,10 @@ namespace Backend.Controllers
             if (user != null && VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 var token = GenerateJwtToken(user.Email, user.Role);
-                return Ok(new { Token = token });
+                return Ok(new { 
+                    Token = token,
+                    CompanyID = user.CompanyID  // Add the company ID to the response
+                });
             }
 
             return Unauthorized();

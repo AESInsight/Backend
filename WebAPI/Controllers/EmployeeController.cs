@@ -4,6 +4,7 @@ using Backend.Services;
 using Backend.Data;
 using Backend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
