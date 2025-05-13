@@ -148,7 +148,8 @@ namespace WebAPI.Tests.Services
             var result = await _companyService.GetCompanyByIdAsync(1);
 
             // Assert
-            Assert.That(result.CompanyName, Is.EqualTo("Updated Company A"));
+            Assert.That(result, Is.Not.Null); // Add null check
+            Assert.That(result!.CompanyName, Is.EqualTo("Updated Company A")); // Use null-forgiving operator
             Assert.That(result.CVR, Is.EqualTo("87654321"));
             Assert.That(result.Email, Is.EqualTo("updated@example.com"));
             Assert.That(result.Industry, Is.EqualTo("Updated Industry"));

@@ -6,7 +6,7 @@ namespace Backend.Services;
 public interface ICompanyService
 {
     Task<List<CompanyModel>> GetAllCompaniesAsync(); // Retrieve all companies
-    Task<CompanyModel> GetCompanyByIdAsync(int id); // Retrieve a company by ID
+    Task<CompanyModel?> GetCompanyByIdAsync(int id); // Retrieve a company by ID
     Task CreateCompaniesAsync(List<CompanyModel> companies); // Batch-insert companies
     Task UpdateCompanyAsync(CompanyModel company); // Update an existing company
     Task DeleteCompanyAsync(int id); // Delete a company by ID

@@ -37,7 +37,7 @@ namespace WebAPI.Tests.Controllers
                     Industry = "Tech",
                     CVR = "12345678",
                     Email = "a@example.com",
-                    PasswordHash = Encoding.UTF8.GetBytes("hash1") // Convert string to byte[]
+                    PasswordHash = Encoding.UTF8.GetBytes("hash1")
                 },
                 new CompanyModel
                 {
@@ -46,7 +46,7 @@ namespace WebAPI.Tests.Controllers
                     Industry = "Finance",
                     CVR = "87654321",
                     Email = "b@example.com",
-                    PasswordHash = Encoding.UTF8.GetBytes("hash2") // Convert string to byte[]
+                    PasswordHash = Encoding.UTF8.GetBytes("hash2")
                 }
             };
             _companyServiceMock.Setup(s => s.GetAllCompaniesAsync()).ReturnsAsync(companies);
@@ -58,7 +58,12 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
-            var companyDTOs = result.Value as List<CompanyDTO>;
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.ContainsKey("data"), Is.True);
+
+            var companyDTOs = response["data"] as List<CompanyDTO>;
             Assert.That(companyDTOs, Is.Not.Null);
             Assert.That(companyDTOs.Count, Is.EqualTo(2));
         }
@@ -90,28 +95,6 @@ namespace WebAPI.Tests.Controllers
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("Companies inserted successfully"));
             Assert.That(response["count"], Is.EqualTo(1)); // Ensure the count matches the number of companies inserted
-        }
-
-        [Test]
-        public async Task DeleteCompany_ReturnsNoContentResult()
-        {
-            // Arrange
-            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1)).ReturnsAsync(new CompanyModel
-            {
-                CompanyID = 1,
-                CompanyName = "Company A",
-                Industry = "Tech",
-                CVR = "12345678",
-                Email = "a@example.com",
-                PasswordHash = Encoding.UTF8.GetBytes("password1")
-            });
-
-            // Act
-            var result = await _controller.DeleteCompany(1) as NoContentResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.StatusCode, Is.EqualTo(204));
         }
 
         [Test]
@@ -156,7 +139,12 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
-            var companyDTO = result.Value as CompanyDTO;
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.ContainsKey("data"), Is.True);
+
+            var companyDTO = response["data"] as CompanyDTO;
             Assert.That(companyDTO, Is.Not.Null);
             Assert.That(companyDTO.CompanyName, Is.EqualTo("Company A"));
         }
@@ -178,30 +166,6 @@ namespace WebAPI.Tests.Controllers
             var error = result.Value as Dictionary<string, object>;
             Assert.That(error, Is.Not.Null);
             Assert.That(error["error"], Is.EqualTo("Company not found"));
-        }
-
-        [Test]
-        public async Task UpdateCompany_ReturnsNoContentResult()
-        {
-            // Arrange
-            var company = new CompanyModel
-            {
-                CompanyID = 1,
-                CompanyName = "Updated Company",
-                Industry = "Tech",
-                CVR = "12345678",
-                Email = "updated@example.com",
-                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
-            };
-
-            _companyServiceMock.Setup(s => s.UpdateCompanyAsync(company)).Returns(Task.CompletedTask);
-
-            // Act
-            var result = await _controller.UpdateCompany(1, company) as NoContentResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.StatusCode, Is.EqualTo(204));
         }
 
         [Test]
@@ -283,10 +247,280 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
-            var industryList = result.Value as List<string>;
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.ContainsKey("data"), Is.True);
+
+            var industryList = response["data"] as List<string>;
             Assert.That(industryList, Is.Not.Null);
             Assert.That(industryList.Count, Is.EqualTo(3));
             Assert.That(industryList, Is.EquivalentTo(industries));
+        }
+
+        [Test]
+        public async Task GetAllCompanies_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetAllCompaniesAsync()).ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetAllCompanies() as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while retrieving companies"));
+            Assert.That(error["details"], Is.EqualTo("Database error")); // Ensure exception details are included
+        }
+
+        [Test]
+        public async Task GetCompanyById_ReturnsNotFoundWhenCompanyIsNull()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1))
+                .ThrowsAsync(new KeyNotFoundException("Company not found"));
+
+            // Act
+            var result = await _controller.GetCompanyById(1) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["error"], Is.EqualTo("Company not found")); // Check for "error" key
+        }
+
+        [Test]
+        public async Task InsertCompanies_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            var companyDTOs = new List<CompanyDTO>
+            {
+                new CompanyDTO { CompanyName = "Company A", Industry = "Tech", CVR = "12345678", Email = "a@example.com" }
+            };
+
+            _companyServiceMock.Setup(s => s.CreateCompaniesAsync(It.IsAny<List<CompanyModel>>()))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.InsertCompanies(companyDTOs) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while inserting companies"));
+            Assert.That(error["details"], Is.EqualTo("Database error")); // Ensure exception details are included
+        }
+
+        [Test]
+        public async Task UpdateCompany_ReturnsNotFoundWhenCompanyDoesNotExist()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Updated Company",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "updated@example.com",
+                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
+            };
+
+            _companyServiceMock.Setup(s => s.UpdateCompanyAsync(company))
+                .ThrowsAsync(new KeyNotFoundException("Company not found"));
+
+            // Act
+            var result = await _controller.UpdateCompany(1, company) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("Company not found"));
+        }
+
+        [Test]
+        public async Task UpdateCompany_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Updated Company",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "updated@example.com",
+                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
+            };
+
+            _companyServiceMock.Setup(s => s.UpdateCompanyAsync(company))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.UpdateCompany(1, company) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while updating the company"));
+        }
+
+        [Test]
+        public async Task GenerateSampleCompanies_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GenerateSampleCompaniesAsync())
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GenerateSampleCompanies() as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while generating sample companies"));
+        }
+
+        [Test]
+        public async Task DeleteAllCompanies_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.DeleteAllCompaniesAsync())
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.DeleteAllCompanies() as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while deleting all companies"));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustry_ReturnsNotFoundWhenNoCompaniesFound()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetAverageSalariesForJobsInIndustryAsync("Tech"))
+                .ReturnsAsync(new List<JobTitleSalaryDTO>());
+
+            // Act
+            var result = await _controller.GetAverageSalariesForJobsInIndustry("Tech") as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("No companies found in the Tech industry"));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustry_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetAverageSalariesForJobsInIndustryAsync("Tech"))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetAverageSalariesForJobsInIndustry("Tech") as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while retrieving salary averages"));
+            Assert.That(error["details"], Is.EqualTo("Database error")); // Ensure exception details are included
+        }
+
+        [Test]
+        public async Task DeleteCompany_ReturnsOkResult()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1)).ReturnsAsync(new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Company A",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "a@example.com",
+                PasswordHash = Encoding.UTF8.GetBytes("password1")
+            });
+
+            _companyServiceMock.Setup(s => s.DeleteCompanyAsync(1)).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.DeleteCompany(1) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("Company deleted successfully"));
+        }
+
+        [Test]
+        public async Task UpdateCompany_ReturnsOkResult()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyID = 1,
+                CompanyName = "Updated Company",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "updated@example.com",
+                PasswordHash = Encoding.UTF8.GetBytes("updatedhash")
+            };
+
+            _companyServiceMock.Setup(s => s.UpdateCompanyAsync(company)).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.UpdateCompany(1, company) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("Company updated successfully"));
         }
     }
 }

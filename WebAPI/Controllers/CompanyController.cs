@@ -32,11 +32,18 @@ public class CompanyController : ControllerBase
                 Email = c.Email
             }).ToList();
 
-            return Ok(companyDTOs);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", companyDTOs }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving companies", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving companies" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -64,7 +71,10 @@ public class CompanyController : ControllerBase
                 Email = company.Email
             };
 
-            return Ok(companyDTO);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", companyDTO }
+            });
         }
         catch (KeyNotFoundException ex)
         {
@@ -87,10 +97,15 @@ public class CompanyController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyDTO> companyDTOs)
     {
-        if (companyDTOs == null || !companyDTOs.Any())
+        try
         {
-            return BadRequest(new { message = "No companies provided" });
-        }
+            if (companyDTOs == null || !companyDTOs.Any())
+            {
+                return BadRequest(new Dictionary<string, object>
+                {
+                    { "message", "No companies provided" }
+                });
+            }
 
             var companies = companyDTOs.Select(dto => new CompanyModel
             {
@@ -100,13 +115,22 @@ public class CompanyController : ControllerBase
                 Email = dto.Email
             }).ToList();
 
-        await _companyService.CreateCompaniesAsync(companies);
+            await _companyService.CreateCompaniesAsync(companies);
 
-        return Ok(new Dictionary<string, object>
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "Companies inserted successfully" },
+                { "count", companies.Count }
+            });
+        }
+        catch (Exception ex)
         {
-            { "message", "Companies inserted successfully" },
-            { "count", companies.Count }
-        });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while inserting companies" },
+                { "details", ex.Message }
+            });
+        }
     }
 
     // PUT: api/company/{id}
@@ -124,7 +148,10 @@ public class CompanyController : ControllerBase
             }
 
             await _companyService.UpdateCompanyAsync(company);
-            return NoContent();
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "Company updated successfully" }
+            });
         }
         catch (KeyNotFoundException ex)
         {
@@ -159,7 +186,10 @@ public class CompanyController : ControllerBase
             }
 
             await _companyService.DeleteCompanyAsync(id);
-            return NoContent();
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "Company deleted successfully" }
+            });
         }
         catch (KeyNotFoundException ex)
         {
@@ -228,11 +258,18 @@ public class CompanyController : ControllerBase
         try
         {
             var industries = await _companyService.GetAllIndustriesAsync();
-            return Ok(industries);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", industries }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving industries", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving industries" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -242,17 +279,27 @@ public class CompanyController : ControllerBase
         try
         {
             var jobTitleAverages = await _companyService.GetAverageSalariesForJobsInIndustryAsync(industry);
-            
+
             if (!jobTitleAverages.Any())
             {
-                return NotFound(new { message = $"No companies found in the {industry} industry" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", $"No companies found in the {industry} industry" }
+                });
             }
 
-            return Ok(jobTitleAverages);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", jobTitleAverages }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving salary averages", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving salary averages" },
+                { "details", ex.Message }
+            });
         }
     }
 }
