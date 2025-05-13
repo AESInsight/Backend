@@ -4,18 +4,12 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Exclude>
-            [Backend]Backend.Extensions.*
-            [Backend]Backend.Models.DTO.*
-            [Backend]Backend.Extensions.*.*
-            [Backend]Backend.Models.DTO.*.*
-            [WebAPI]WebAPI.Extensions.*
-            [WebAPI]WebAPI.Models.DTO.*
-            [WebAPI]WebAPI.Extensions.*.*
-            [WebAPI]WebAPI.Models.DTO.*.*
+            [WebAPI]Backend.Models.DTO.*
+            [WebAPI]Backend.Extensions.*
           </Exclude>
           <ExcludeByFile>
-            **/Extensions/*
             **/Models/DTO/*
+            **/Extensions/*
           </ExcludeByFile>
         </Configuration>
       </DataCollector>
