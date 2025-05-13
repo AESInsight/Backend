@@ -52,11 +52,11 @@ public class SalaryController : ControllerBase
             return NotFound(new { message = $"No salary found for EmployeeID {employeeId}" });
         }
 
-        var dto = new SalaryDto
+        var dto = new SalaryDTO
         {
             SalaryID = latestSalary.SalaryID,
             EmployeeID = latestSalary.EmployeeID,
-            Salary = latestSalary.Salary,
+            Salary = (decimal)latestSalary.Salary,
             Timestamp = latestSalary.Timestamp
         };
 
@@ -70,11 +70,11 @@ public class SalaryController : ControllerBase
         var salaryHistory = await _dbContext.Salaries
             .Where(s => s.EmployeeID == employeeId)
             .OrderByDescending(s => s.Timestamp)
-            .Select(s => new SalaryDto
+            .Select(s => new SalaryDTO
             {
                 SalaryID = s.SalaryID,
                 EmployeeID = s.EmployeeID,
-                Salary = s.Salary,
+                Salary = (decimal)s.Salary,
                 Timestamp = s.Timestamp
             })
             .ToListAsync();
