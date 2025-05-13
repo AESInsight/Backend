@@ -6,7 +6,17 @@
           <Exclude>
             [Backend]Backend.Extensions.*
             [Backend]Backend.Models.DTO.*
+            [Backend]Backend.Extensions.*.*
+            [Backend]Backend.Models.DTO.*.*
+            [WebAPI]WebAPI.Extensions.*
+            [WebAPI]WebAPI.Models.DTO.*
+            [WebAPI]WebAPI.Extensions.*.*
+            [WebAPI]WebAPI.Models.DTO.*.*
           </Exclude>
+          <ExcludeByFile>
+            **/Extensions/*
+            **/Models/DTO/*
+          </ExcludeByFile>
         </Configuration>
       </DataCollector>
     </DataCollectors>
