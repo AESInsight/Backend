@@ -58,7 +58,7 @@ public class CompanyController : ControllerBase
             {
                 return NotFound(new Dictionary<string, object>
                 {
-                    { "message", "Company not found" }
+                    { "message", "Company not found" } // Changed from "error" to "message"
                 });
             }
 

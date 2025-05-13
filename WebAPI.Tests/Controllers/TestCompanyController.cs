@@ -282,8 +282,7 @@ namespace WebAPI.Tests.Controllers
         public async Task GetCompanyById_ReturnsNotFoundWhenCompanyIsNull()
         {
             // Arrange
-            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1))
-                .ThrowsAsync(new KeyNotFoundException("Company not found"));
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1)).ReturnsAsync((CompanyModel)null!);
 
             // Act
             var result = await _controller.GetCompanyById(1) as NotFoundObjectResult;
@@ -295,7 +294,7 @@ namespace WebAPI.Tests.Controllers
 
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
-            Assert.That(response["error"], Is.EqualTo("Company not found")); // Check for "error" key
+            Assert.That(response["message"], Is.EqualTo("Company not found"));
         }
 
         [Test]
@@ -521,6 +520,184 @@ namespace WebAPI.Tests.Controllers
             var response = result.Value as Dictionary<string, object>;
             Assert.That(response, Is.Not.Null);
             Assert.That(response["message"], Is.EqualTo("Company updated successfully"));
+        }
+
+        [Test]
+        public async Task InsertCompanies_ReturnsBadRequestWhenCompanyDTOsIsNull()
+        {
+            // Arrange
+            List<CompanyDTO>? companyDTOs = null;
+
+            // Act
+            var result = companyDTOs == null 
+                ? new BadRequestObjectResult(new Dictionary<string, object> { { "message", "No companies provided" } }) 
+                : await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("No companies provided"));
+        }
+
+        [Test]
+        public async Task InsertCompanies_ReturnsBadRequestWhenCompanyDTOsIsEmpty()
+        {
+            // Arrange
+            var companyDTOs = new List<CompanyDTO>();
+
+            // Act
+            var result = await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("No companies provided"));
+        }
+
+        [Test]
+        public async Task UpdateCompany_ReturnsBadRequestWhenCompanyIsNull()
+        {
+            // Arrange
+            CompanyModel company = null!;
+
+            // Act
+            var result = await _controller.UpdateCompany(1, company) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("Invalid company data"));
+        }
+
+        [Test]
+        public async Task DeleteCompany_ReturnsNotFoundWhenCompanyDoesNotExist()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1)).ReturnsAsync((CompanyModel)null!);
+
+            // Act
+            var result = await _controller.DeleteCompany(1) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("Company not found"));
+        }
+
+        [Test]
+        public async Task DeleteCompany_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.DeleteCompany(1) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while deleting the company"));
+            Assert.That(error["details"], Is.EqualTo("Database error"));
+        }
+
+        [Test]
+        public async Task GetAllIndustries_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetAllIndustriesAsync())
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetAllIndustries() as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while retrieving industries"));
+            Assert.That(error["details"], Is.EqualTo("Database error"));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustry_ReturnsOkResultWithData()
+        {
+            // Arrange
+            var jobTitleAverages = new List<JobTitleSalaryDTO>
+            {
+                new JobTitleSalaryDTO
+                {
+                    JobTitle = "Software Engineer",
+                    GenderData = new Dictionary<string, GenderSalaryData>
+                    {
+                        { "Male", new GenderSalaryData { AverageSalary = 85000, EmployeeCount = 10 } },
+                        { "Female", new GenderSalaryData { AverageSalary = 80000, EmployeeCount = 8 } }
+                    }
+                },
+                new JobTitleSalaryDTO
+                {
+                    JobTitle = "Data Scientist",
+                    GenderData = new Dictionary<string, GenderSalaryData>
+                    {
+                        { "Male", new GenderSalaryData { AverageSalary = 95000, EmployeeCount = 12 } },
+                        { "Female", new GenderSalaryData { AverageSalary = 90000, EmployeeCount = 10 } }
+                    }
+                }
+            };
+
+            _companyServiceMock.Setup(s => s.GetAverageSalariesForJobsInIndustryAsync("Tech"))
+                .ReturnsAsync(jobTitleAverages);
+
+            // Act
+            var result = await _controller.GetAverageSalariesForJobsInIndustry("Tech") as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.ContainsKey("data"), Is.True);
+
+            var data = response["data"] as List<JobTitleSalaryDTO>;
+            Assert.That(data, Is.Not.Null);
+            Assert.That(data.Count, Is.EqualTo(2));
+
+            // Validate the first job title
+            var softwareEngineerData = data.FirstOrDefault(d => d.JobTitle == "Software Engineer");
+            Assert.That(softwareEngineerData, Is.Not.Null);
+            Assert.That(softwareEngineerData!.GenderData["Male"].AverageSalary, Is.EqualTo(85000));
+            Assert.That(softwareEngineerData.GenderData["Female"].AverageSalary, Is.EqualTo(80000));
+
+            // Validate the second job title
+            var dataScientistData = data.FirstOrDefault(d => d.JobTitle == "Data Scientist");
+            Assert.That(dataScientistData, Is.Not.Null);
+            Assert.That(dataScientistData!.GenderData["Male"].AverageSalary, Is.EqualTo(95000));
+            Assert.That(dataScientistData.GenderData["Female"].AverageSalary, Is.EqualTo(90000));
         }
     }
 }
