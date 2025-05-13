@@ -2,8 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Backend.Data;
-using Backend.Models.DTOs;
+using Backend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
@@ -299,7 +300,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var jobTitles = await _employeeService.GetAllJobTitlesAsync();
-            
+
             if (!jobTitles.Any())
             {
                 return NotFound(new { message = "No job titles found" });
@@ -319,7 +320,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var employees = await _employeeService.GetEmployeesByJobTitleAsync(jobTitle);
-            
+
             if (!employees.Any())
             {
                 return NotFound(new { message = $"No employees found with job title: {jobTitle}" });
@@ -339,7 +340,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var salaryDifferences = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
-            
+
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
                 return NotFound(new { message = $"No salary data found for job title: {jobTitle}" });
@@ -359,7 +360,7 @@ public class EmployeeController : ControllerBase
         try
         {
             var salaryDifferences = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
-            
+
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
                 return NotFound(new { message = "No salary data found" });
@@ -372,4 +373,39 @@ public class EmployeeController : ControllerBase
             return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
         }
     }
+
+    [HttpGet("industry/{id}")]
+    public async Task<IActionResult> GetEmployeeIndustryById(int id)
+    {
+        try
+        {
+            if (id <= 0)
+            {
+                return BadRequest(new { error = "Invalid employee ID" });
+            }
+
+            var employeeIndustryDto = await _dbContext.Employee
+                .Where(e => e.EmployeeID == id)
+                .Select(e => new EmployeeIndustryDto
+                {
+                    EmployeeID = e.EmployeeID,
+                    JobTitle = e.JobTitle,
+                    CompanyID = e.CompanyID,
+                    Industry = e.Company.Industry
+                })
+                .FirstOrDefaultAsync();
+
+            if (employeeIndustryDto == null)
+            {
+                return NotFound(new { error = $"Employee with ID {id} not found or company information is missing" });
+            }
+
+            return Ok(employeeIndustryDto);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while retrieving the employee's industry", details = ex.Message });
+        }
+    }
+
 }

@@ -54,6 +54,7 @@ public class EmailService : IEmailService
 
                 <div style='margin: 24px 0; text-align: center;'>
                     <a href='https://aes-insight.dk/reset-password'
+
                         style='
                             display: inline-block;
                             background-color: #007bff;

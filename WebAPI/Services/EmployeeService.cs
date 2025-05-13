@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
 using Backend.Data;
-using Backend.Models.DTOs;
+using Backend.Models.DTO;
 
 namespace Backend.Services;
 
@@ -75,14 +75,11 @@ public class EmployeeService : IEmployeeService
     public Task<EmployeeModel> DeleteEmployeeAsync(int id)
     {
         var employee = _context.Employee.Find(id);
-        if (employee != null)
-        {
-            _context.Employee.Remove(employee);
-            _context.SaveChangesAsync();
-        }
-
         if (employee == null)
             throw new KeyNotFoundException($"Employee with ID {id} not found.");
+
+        _context.Employee.Remove(employee);
+        _context.SaveChangesAsync();
 
         return Task.FromResult(employee);
     }
