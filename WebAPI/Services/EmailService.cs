@@ -49,10 +49,12 @@ public class EmailService : IEmailService
                 <h2>Password Reset Request</h2>
                 <p>Hello {company.CompanyName},</p>
                 <p>You have requested to reset your password for your AES Insight account.</p>
-                <p>To reset your password, please click the button below:</p>
+                <p>Please copy the following reset token and paste it into the password reset form on our website:</p>
+                <p> Token: <strong>{resetToken}</strong></p>
 
                 <div style='margin: 24px 0; text-align: center;'>
-                    <a href='https://aes-insight.dk/reset-password?token={resetToken}'
+                    <a href='https://aes-insight.dk/reset-password'
+
                         style='
                             display: inline-block;
                             background-color: #007bff;
