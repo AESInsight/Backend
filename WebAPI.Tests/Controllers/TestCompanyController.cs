@@ -320,7 +320,7 @@ namespace WebAPI.Tests.Controllers
             var error = result.Value as Dictionary<string, object>;
             Assert.That(error, Is.Not.Null);
             Assert.That(error["error"], Is.EqualTo("An error occurred while inserting companies"));
-            Assert.That(error["details"], Is.EqualTo("Database error")); // Ensure exception details are included
+            Assert.That(error["details"], Is.EqualTo("Database error"));
         }
 
         [Test]
@@ -544,25 +544,6 @@ namespace WebAPI.Tests.Controllers
         }
 
         [Test]
-        public async Task InsertCompanies_ReturnsBadRequestWhenCompanyDTOsIsEmpty()
-        {
-            // Arrange
-            var companyDTOs = new List<CompanyDTO>();
-
-            // Act
-            var result = await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.StatusCode, Is.EqualTo(400));
-            Assert.That(result.Value, Is.Not.Null);
-
-            var response = result.Value as Dictionary<string, object>;
-            Assert.That(response, Is.Not.Null);
-            Assert.That(response["message"], Is.EqualTo("No companies provided"));
-        }
-
-        [Test]
         public async Task UpdateCompany_ReturnsBadRequestWhenCompanyIsNull()
         {
             // Arrange
@@ -698,6 +679,46 @@ namespace WebAPI.Tests.Controllers
             Assert.That(dataScientistData, Is.Not.Null);
             Assert.That(dataScientistData!.GenderData["Male"].AverageSalary, Is.EqualTo(95000));
             Assert.That(dataScientistData.GenderData["Female"].AverageSalary, Is.EqualTo(90000));
+        }
+        
+        [Test]
+        public async Task GetCompanyById_ReturnsInternalServerErrorOnException()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(1))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetCompanyById(1) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var error = result.Value as Dictionary<string, object>;
+            Assert.That(error, Is.Not.Null);
+            Assert.That(error["error"], Is.EqualTo("An error occurred while retrieving the company"));
+            Assert.That(error["details"], Is.EqualTo("Database error"));
+        }
+
+        [Test]
+        public async Task InsertCompanies_ReturnsBadRequestWhenCompanyDTOsIsEmpty()
+        {
+            // Arrange
+            var companyDTOs = new List<CompanyDTO>(); // Empty list
+
+            // Act
+            var result = await _controller.InsertCompanies(companyDTOs) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.Not.Null);
+
+            var response = result.Value as Dictionary<string, object>;
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response["message"], Is.EqualTo("No companies provided"));
         }
     }
 }
