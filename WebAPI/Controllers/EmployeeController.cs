@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
-using Backend.Data;
 using Backend.Models.DTO;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers;
 
@@ -12,12 +10,10 @@ namespace Backend.Controllers;
 public class EmployeeController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-    private readonly ApplicationDbContext _dbContext;
 
-    public EmployeeController(IEmployeeService employeeService, ApplicationDbContext dbContext)
+    public EmployeeController(IEmployeeService employeeService)
     {
         _employeeService = employeeService;
-        _dbContext = dbContext;
     }
 
     [HttpGet("{id}")]
@@ -29,7 +25,10 @@ public class EmployeeController : ControllerBase
 
             if (employee == null)
             {
-                return NotFound(new { error = $"Employee with ID {id} not found" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", $"Employee with ID {id} not found" }
+                });
             }
 
             var employeeDto = new EmployeeDto
@@ -41,15 +40,25 @@ public class EmployeeController : ControllerBase
                 CompanyID = employee.CompanyID
             };
 
-            return Ok(employeeDto);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", employeeDto }
+            });
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving the employee", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving the employee" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -58,7 +67,8 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var employees = await _dbContext.Employee
+            var employees = await _employeeService.GetAllEmployeesAsync();
+            var filteredEmployees = employees
                 .Where(e => e.CompanyID == companyId)
                 .Select(e => new EmployeeDto
                 {
@@ -68,18 +78,28 @@ public class EmployeeController : ControllerBase
                     Gender = e.Gender,
                     CompanyID = e.CompanyID
                 })
-                .ToListAsync();
+                .ToList();
 
-            if (!employees.Any())
+            if (!filteredEmployees.Any())
             {
-                return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", $"No employees found for CompanyID {companyId}" }
+                });
             }
 
-            return Ok(employees);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", filteredEmployees }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving employees" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -90,41 +110,27 @@ public class EmployeeController : ControllerBase
         {
             if (employees == null || !employees.Any())
             {
-                return BadRequest("No employees provided");
-            }
-
-            var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
-            int currentId = maxEmployeeId + 1;
-
-            foreach (var employee in employees)
-            {
-                if (employee.CompanyID <= 0 || string.IsNullOrEmpty(employee.JobTitle) || string.IsNullOrEmpty(employee.Gender))
+                return BadRequest(new Dictionary<string, object>
                 {
-                    return BadRequest("Invalid employee data");
-                }
-
-                if (employee.Experience < 0)
-                {
-                    return BadRequest("Invalid employee data: Experience must be >= 0");
-                }
-
-                if (employee.EmployeeID <= 0)
-                {
-                    employee.EmployeeID = currentId++;
-                }
+                    { "message", "No employees provided" }
+                });
             }
 
             var result = await _employeeService.BulkCreateEmployeesAsync(employees);
 
-            return Ok(new
+            return Ok(new Dictionary<string, object>
             {
-                message = $"Successfully processed {result.Count} employees",
-                processedCount = result.Count
+                { "message", $"Successfully processed {result.Count} employees" },
+                { "processedCount", result.Count }
             });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while processing the bulk upload", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while processing the bulk upload" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -135,32 +141,34 @@ public class EmployeeController : ControllerBase
         {
             if (updatedEmployee == null || id <= 0)
             {
-                return BadRequest("Invalid employee data or ID");
+                return BadRequest(new Dictionary<string, object>
+                {
+                    { "message", "Invalid employee data or ID" }
+                });
             }
-
-            if (updatedEmployee.CompanyID <= 0 || string.IsNullOrEmpty(updatedEmployee.JobTitle) || string.IsNullOrEmpty(updatedEmployee.Gender))
-            {
-                return BadRequest("Invalid employee data: Missing required fields or invalid CompanyID");
-            }
-
-            if (updatedEmployee.Experience < 0)
-            {
-                return BadRequest("Invalid employee data: Experience must be >= 0");
-            }
-
-            updatedEmployee.EmployeeID = id;
 
             var result = await _employeeService.UpdateEmployeeAsync(id, updatedEmployee);
 
-            return Ok(new { message = "Employee updated successfully", employee = result });
+            return Ok(new Dictionary<string, object>
+            {
+                { "message", "Employee updated successfully" },
+                { "employee", result }
+            });
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while updating the employee", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while updating the employee" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -171,63 +179,51 @@ public class EmployeeController : ControllerBase
         {
             if (id <= 0)
             {
-                return BadRequest("Invalid employee ID");
+                return BadRequest(new Dictionary<string, object>
+                {
+                    { "message", "Invalid employee ID" }
+                });
             }
 
-            var employee = await _employeeService.GetEmployeeByIdAsync(id);
-            if (employee == null)
+            var employee = await _employeeService.DeleteEmployeeAsync(id);
+
+            return Ok(new Dictionary<string, object>
             {
-                return NotFound(new { error = $"Employee with ID {id} not found" });
-            }
-
-            await _employeeService.DeleteEmployeeAsync(id);
-
-            return Ok(new { message = "Employee deleted successfully" });
+                { "message", "Employee deleted successfully" },
+                { "employee", employee }
+            });
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { error = ex.Message });
+            return NotFound(new Dictionary<string, object>
+            {
+                { "error", ex.Message }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while deleting the employee", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while deleting the employee" },
+                { "details", ex.Message }
+            });
         }
     }
 
     [HttpPost("generate-sample-data")]
     public async Task<IActionResult> GenerateSampleData()
     {
-        string GetRandomJobTitle(Random random)
-        {
-            var jobTitles = new[]
-            {
-                "Software Engineer",
-                "Data Analyst",
-                "Project Manager",
-                "HR Specialist",
-                "Marketing Manager",
-                "Sales Representative",
-                "Product Manager",
-                "Business Analyst",
-                "DevOps Engineer",
-                "UI/UX Designer"
-            };
-
-            return jobTitles[random.Next(jobTitles.Length)];
-        }
-
         try
         {
             var random = new Random();
             var sampleEmployees = new List<EmployeeModel>();
-            var maxEmployeeId = await _employeeService.GetMaxEmployeeIdAsync();
 
             for (int i = 1; i <= 100; i++)
             {
                 sampleEmployees.Add(new EmployeeModel
                 {
-                    EmployeeID = maxEmployeeId + i,
-                    JobTitle = GetRandomJobTitle(random),
+                    EmployeeID = i,
+                    JobTitle = random.Next(0, 2) == 0 ? "Software Engineer" : "Data Analyst",
                     Experience = random.Next(0, 30),
                     Gender = random.Next(0, 2) == 0 ? "Male" : "Female",
                     CompanyID = random.Next(1, 4)
@@ -236,15 +232,19 @@ public class EmployeeController : ControllerBase
 
             await _employeeService.BulkCreateEmployeesAsync(sampleEmployees);
 
-            return Ok(new
+            return Ok(new Dictionary<string, object>
             {
-                message = "Successfully generated 100 sample employees",
-                generatedCount = sampleEmployees.Count
+                { "message", "Successfully generated 100 sample employees" },
+                { "generatedCount", sampleEmployees.Count }
             });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while generating sample data", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while generating sample data" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -254,42 +254,18 @@ public class EmployeeController : ControllerBase
         try
         {
             await _employeeService.DeleteAllEmployeesAsync();
-            return Ok(new { message = "All employees have been deleted successfully." });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while deleting employees", details = ex.Message });
-        }
-    }
-
-    [HttpGet("GetAllEmployees")]
-    public async Task<IActionResult> GetAllEmployees()
-    {
-        try
-        {
-            var employees = await _dbContext.Employee
-                .OrderBy(e => e.EmployeeID)
-                .Select(e => new EmployeeDto
-                {
-                    EmployeeID = e.EmployeeID,
-                    JobTitle = e.JobTitle,
-                    Experience = e.Experience,
-                    Gender = e.Gender,
-                    CompanyID = e.CompanyID
-                })
-                .ToListAsync();
-
-            if (!employees.Any())
+            return Ok(new Dictionary<string, object>
             {
-                return NotFound(new { Status = "NotFound", Message = "No employees found in the database." });
-            }
-
-            return Ok(employees);
+                { "message", "All employees have been deleted successfully." }
+            });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching employees: {ex.Message}");
-            return BadRequest(new { Status = "Error", Message = $"Failed to retrieve data: {ex.Message}" });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while deleting employees" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -302,14 +278,24 @@ public class EmployeeController : ControllerBase
 
             if (!jobTitles.Any())
             {
-                return NotFound(new { message = "No job titles found" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", "No job titles found" }
+                });
             }
 
-            return Ok(new { jobTitles = jobTitles });
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", jobTitles }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving job titles", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving job titles" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -322,14 +308,24 @@ public class EmployeeController : ControllerBase
 
             if (!employees.Any())
             {
-                return NotFound(new { message = $"No employees found with job title: {jobTitle}" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", $"No employees found with job title: {jobTitle}" }
+                });
             }
 
-            return Ok(employees);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", employees }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving employees", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving employees" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -342,14 +338,24 @@ public class EmployeeController : ControllerBase
 
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
-                return NotFound(new { message = $"No salary data found for job title: {jobTitle}" });
+                return NotFound(new Dictionary<string, object>
+                {
+                    { "message", $"No salary data found for job title: {jobTitle}" }
+                });
             }
 
-            return Ok(salaryDifferences);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", salaryDifferences }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving salary differences" },
+                { "details", ex.Message }
+            });
         }
     }
 
@@ -362,49 +368,24 @@ public class EmployeeController : ControllerBase
 
             if (!salaryDifferences["Male"].Any() && !salaryDifferences["Female"].Any())
             {
-                return NotFound(new { message = "No salary data found" });
-            }
-
-            return Ok(salaryDifferences);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while retrieving salary differences", details = ex.Message });
-        }
-    }
-
-    [HttpGet("industry/{id}")]
-    public async Task<IActionResult> GetEmployeeIndustryById(int id)
-    {
-        try
-        {
-            if (id <= 0)
-            {
-                return BadRequest(new { error = "Invalid employee ID" });
-            }
-
-            var employeeIndustryDto = await _dbContext.Employee
-                .Where(e => e.EmployeeID == id)
-                .Select(e => new EmployeeIndustryDto
+                return NotFound(new Dictionary<string, object>
                 {
-                    EmployeeID = e.EmployeeID,
-                    JobTitle = e.JobTitle,
-                    CompanyID = e.CompanyID,
-                    Industry = e.Company.Industry
-                })
-                .FirstOrDefaultAsync();
-
-            if (employeeIndustryDto == null)
-            {
-                return NotFound(new { error = $"Employee with ID {id} not found or company information is missing" });
+                    { "message", "No salary data found" }
+                });
             }
 
-            return Ok(employeeIndustryDto);
+            return Ok(new Dictionary<string, object>
+            {
+                { "data", salaryDifferences }
+            });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving the employee's industry", details = ex.Message });
+            return StatusCode(500, new Dictionary<string, object>
+            {
+                { "error", "An error occurred while retrieving salary differences" },
+                { "details", ex.Message }
+            });
         }
     }
-
 }
