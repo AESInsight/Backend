@@ -32,7 +32,7 @@ jobs:
         run: |
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
             --collect:"XPlat Code Coverage" \
-            /p:Exclude="[Backend.Migrations]*,[Backend.Models]*" \
+            /p:Exclude="[Backend.Migrations]*;[Backend.Models]*" \
             --logger "trx;LogFileName=TestResults/test-results.trx"
 
       - name: Install ReportGenerator
