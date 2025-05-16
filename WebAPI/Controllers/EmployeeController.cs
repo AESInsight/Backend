@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Backend.Models.DTO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
@@ -211,6 +212,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("generate-sample-data")]
+    [ExcludeFromCodeCoverage] // Exclude this method from code coverage
     public async Task<IActionResult> GenerateSampleData()
     {
         try
