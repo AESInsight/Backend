@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 namespace Backend.Models.DTO;
 
+[ExcludeFromCodeCoverage]
 public class EmployeeIndustryDto
 {
     public int EmployeeID { get; set; }

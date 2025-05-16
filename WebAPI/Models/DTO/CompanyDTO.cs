@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 namespace Backend.Models.DTO;
 
+[ExcludeFromCodeCoverage]
 public class CompanyDTO
 {
     public int CompanyID { get; set; } // Unique ID for the company
