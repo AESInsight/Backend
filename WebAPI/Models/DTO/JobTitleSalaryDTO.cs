@@ -8,6 +8,7 @@ public class JobTitleSalaryDTO
     public Dictionary<string, GenderSalaryData> GenderData { get; set; } = new();
 }
 
+[ExcludeFromCodeCoverage]
 public class GenderSalaryData
 {
     public double AverageSalary { get; set; }
