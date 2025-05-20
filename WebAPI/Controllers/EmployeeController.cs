@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Backend.Models.DTO;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
