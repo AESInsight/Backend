@@ -6,11 +6,13 @@ on:
       - main
       - develop
       - feat/**
+      - fix/**
   pull_request:
     branches:
       - main
       - develop
       - feat/**
+      - fix/**
 
 jobs:
   test-and-coverage:
