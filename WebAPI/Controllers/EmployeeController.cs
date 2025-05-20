@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
-using Backend.Data;
 using Backend.Models.DTO;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
@@ -13,12 +12,10 @@ namespace Backend.Controllers;
 public class EmployeeController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-    private readonly ApplicationDbContext _dbContext;
 
-    public EmployeeController(IEmployeeService employeeService, ApplicationDbContext dbContext)
+    public EmployeeController(IEmployeeService employeeService)
     {
         _employeeService = employeeService;
-        _dbContext = dbContext;
     }
 
     [HttpGet("{id}")]
@@ -59,24 +56,23 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var employees = await _dbContext.Employee
-                .Where(e => e.CompanyID == companyId)
-                .Select(e => new EmployeeDto
-                {
-                    EmployeeID = e.EmployeeID,
-                    JobTitle = e.JobTitle,
-                    Experience = e.Experience,
-                    Gender = e.Gender,
-                    CompanyID = e.CompanyID
-                })
-                .ToListAsync();
+            var employees = await _employeeService.GetEmployeesByCompanyIdAsync(companyId);
 
-            if (!employees.Any())
+            if (employees == null || !employees.Any())
             {
                 return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
             }
 
-            return Ok(employees);
+            var employeeDtos = employees.Select(e => new EmployeeDto
+            {
+                EmployeeID = e.EmployeeID,
+                JobTitle = e.JobTitle,
+                Experience = e.Experience,
+                Gender = e.Gender,
+                CompanyID = e.CompanyID
+            }).ToList();
+
+            return Ok(employeeDtos);
         }
         catch (Exception ex)
         {
@@ -196,6 +192,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpPost("generate-sample-data")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> GenerateSampleData()
     {
         string GetRandomJobTitle(Random random)
@@ -250,6 +247,7 @@ public class EmployeeController : ControllerBase
     }
 
     [HttpDelete("delete-all")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> DeleteAllEmployees()
     {
         try
@@ -268,24 +266,23 @@ public class EmployeeController : ControllerBase
     {
         try
         {
-            var employees = await _dbContext.Employee
-                .OrderBy(e => e.EmployeeID)
-                .Select(e => new EmployeeDto
-                {
-                    EmployeeID = e.EmployeeID,
-                    JobTitle = e.JobTitle,
-                    Experience = e.Experience,
-                    Gender = e.Gender,
-                    CompanyID = e.CompanyID
-                })
-                .ToListAsync();
+            var employees = await _employeeService.GetAllEmployeesAsync();
 
-            if (!employees.Any())
+            if (employees == null || !employees.Any())
             {
                 return NotFound(new { Status = "NotFound", Message = "No employees found in the database." });
             }
 
-            return Ok(employees);
+            var employeeDtos = employees.Select(e => new EmployeeDto
+            {
+                EmployeeID = e.EmployeeID,
+                JobTitle = e.JobTitle,
+                Experience = e.Experience,
+                Gender = e.Gender,
+                CompanyID = e.CompanyID
+            }).ToList();
+
+            return Ok(employeeDtos);
         }
         catch (Exception ex)
         {
@@ -384,16 +381,7 @@ public class EmployeeController : ControllerBase
                 return BadRequest(new { error = "Invalid employee ID" });
             }
 
-            var employeeIndustryDto = await _dbContext.Employee
-                .Where(e => e.EmployeeID == id)
-                .Select(e => new EmployeeIndustryDto
-                {
-                    EmployeeID = e.EmployeeID,
-                    JobTitle = e.JobTitle,
-                    CompanyID = e.CompanyID,
-                    Industry = e.Company.Industry
-                })
-                .FirstOrDefaultAsync();
+            var employeeIndustryDto = await _employeeService.GetEmployeeIndustryByIdAsync(id);
 
             if (employeeIndustryDto == null)
             {
@@ -407,5 +395,4 @@ public class EmployeeController : ControllerBase
             return StatusCode(500, new { error = "An error occurred while retrieving the employee's industry", details = ex.Message });
         }
     }
-
 }

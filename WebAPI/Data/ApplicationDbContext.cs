@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Data;
 
+[ExcludeFromCodeCoverage]
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
