@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer; // For JwtBearerDefaults
 using Microsoft.IdentityModel.Tokens; // For TokenValidationParameters and SymmetricSecurityKey
 using Microsoft.OpenApi.Models; // For OpenApiInfo, OpenApiSecurityScheme, etc.
 using Backend.Models;
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: ExcludeFromCodeCoverage]
 
 var builder = WebApplication.CreateBuilder(args);
 

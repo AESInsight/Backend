@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Backend.Models.DTO;
 using System.Text;
 using System.Security.Cryptography;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Services;
 
@@ -115,6 +116,7 @@ public class CompanyService : ICompanyService
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public async Task GenerateSampleCompaniesAsync()
     {
         var random = new Random();
@@ -137,11 +139,6 @@ public class CompanyService : ICompanyService
     public async Task<CompanyModel?> GetCompanyByEmailAsync(string email)
     {
         return await _dbContext.Companies.FirstOrDefaultAsync(c => c.Email == email);
-    }
-
-    public Task<bool> VerifyPasswordAsync(string email, string password)
-    {
-        throw new NotSupportedException("Password verification is not supported in this service.");
     }
 
     public async Task<List<string>> GetAllIndustriesAsync()

@@ -273,5 +273,127 @@ namespace WebAPI.Tests.Services
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Count, Is.GreaterThanOrEqualTo(0)); // Depends on seeded data
         }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_ReturnsEmpty_WhenNoCompaniesInIndustry()
+        {
+            // Act
+            var result = await _companyService.GetAverageSalariesForJobsInIndustryAsync("NonExistentIndustry");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_ReturnsEmpty_WhenNoEmployeesInIndustry()
+        {
+            // Arrange
+            // Add a company in a new industry but no employees
+            var dbContext = GetDbContext();
+            dbContext.Companies.Add(new CompanyModel
+            {
+                CompanyName = "NoEmpCo",
+                CVR = "99999999",
+                Email = "noemp@example.com",
+                Industry = "EmptyIndustry",
+                PasswordHash = Encoding.UTF8.GetBytes("password")
+            });
+            dbContext.SaveChanges();
+
+            // Act
+            var result = await _companyService.GetAverageSalariesForJobsInIndustryAsync("EmptyIndustry");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_ReturnsZeroSalary_WhenEmployeesHaveNoSalaries()
+        {
+            // Arrange
+            var dbContext = GetDbContext();
+            var company = new CompanyModel
+            {
+                CompanyName = "NoSalaryCo",
+                CVR = "88888888",
+                Email = "nosalary@example.com",
+                Industry = "NoSalaryIndustry",
+                PasswordHash = Encoding.UTF8.GetBytes("password")
+            };
+            dbContext.Companies.Add(company);
+            dbContext.SaveChanges();
+
+            dbContext.Employee.Add(new EmployeeModel
+            {
+                EmployeeID = 100,
+                CompanyID = company.CompanyID,
+                JobTitle = "Engineer",
+                Gender = "Other"
+            });
+            dbContext.SaveChanges();
+
+            // Act
+            var result = await _companyService.GetAverageSalariesForJobsInIndustryAsync("NoSalaryIndustry");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result[0].JobTitle, Is.EqualTo("Engineer"));
+            Assert.That(result[0].GenderData["Other"].EmployeeCount, Is.EqualTo(1));
+            Assert.That(result[0].GenderData["Other"].AverageSalary, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_GroupsUnknownJobTitleAndGender()
+        {
+            // Arrange
+            var dbContext = GetDbContext();
+            var company = new CompanyModel
+            {
+                CompanyName = "UnknownsCo",
+                CVR = "77777777",
+                Email = "unknowns@example.com",
+                Industry = "UnknownIndustry",
+                PasswordHash = Encoding.UTF8.GetBytes("password")
+            };
+            dbContext.Companies.Add(company);
+            dbContext.SaveChanges();
+
+            dbContext.Employee.Add(new EmployeeModel
+            {
+                EmployeeID = 200,
+                CompanyID = company.CompanyID,
+                JobTitle = null,
+                Gender = null
+            });
+            dbContext.Salaries.Add(new SalaryModel
+            {
+                SalaryID = 1,
+                EmployeeID = 200,
+                Salary = 42000,
+                Timestamp = DateTime.UtcNow
+            });
+            dbContext.SaveChanges();
+
+            // Act
+            var result = await _companyService.GetAverageSalariesForJobsInIndustryAsync("UnknownIndustry");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result[0].JobTitle, Is.EqualTo("Unknown"));
+            Assert.That(result[0].GenderData.ContainsKey("Unknown"), Is.True);
+            Assert.That(result[0].GenderData["Unknown"].EmployeeCount, Is.EqualTo(1));
+            Assert.That(result[0].GenderData["Unknown"].AverageSalary, Is.EqualTo(42000));
+        }
+
+        // Helper to get the current dbContext from the service (since it's private)
+        private ApplicationDbContext GetDbContext()
+        {
+            var field = typeof(CompanyService).GetField("_dbContext", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            return (ApplicationDbContext)field!.GetValue(_companyService)!;
+        }
     }
 }

@@ -110,5 +110,83 @@ namespace WebAPI.Tests.Services
             // Assert
             Assert.Pass("EmailService executed without throwing exceptions.");
         }
+
+        [Test]
+        public Task SendPasswordResetEmailAsync_ThrowsException_WhenSmtpSettingsMissing()
+        {
+            // Arrange
+            var email = "test@example.com";
+            var resetToken = "test-reset-token";
+
+            // Simulate SkipSmtp = false and missing SmtpSettings:Server
+            var skipSmtpSectionMock = new Mock<IConfigurationSection>();
+            skipSmtpSectionMock.Setup(x => x.Value).Returns("false");
+            _configurationMock.Setup(x => x.GetSection("SkipSmtp")).Returns(skipSmtpSectionMock.Object);
+
+            var smtpSettingsSectionMock = new Mock<IConfigurationSection>();
+            smtpSettingsSectionMock.Setup(x => x["Server"]).Returns((string?)null);
+            _configurationMock.Setup(x => x.GetSection("SmtpSettings")).Returns(smtpSettingsSectionMock.Object);
+
+            _emailService = new EmailService(_configurationMock.Object, _loggerMock.Object, _dbContext);
+
+            // Act & Assert
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await _emailService.SendPasswordResetEmailAsync(email, resetToken));
+            return Task.CompletedTask;
+        }
+
+        [Test]
+        public Task SendPasswordResetEmailAsync_ThrowsOnSmtpFailure()
+        {
+            // Arrange
+            var email = "test@example.com";
+            var resetToken = "test-reset-token";
+
+            // Simulate SkipSmtp = false and valid SmtpSettings:Server
+            var skipSmtpSectionMock = new Mock<IConfigurationSection>();
+            skipSmtpSectionMock.Setup(x => x.Value).Returns("false");
+            _configurationMock.Setup(x => x.GetSection("SkipSmtp")).Returns(skipSmtpSectionMock.Object);
+
+            var smtpSettingsSectionMock = new Mock<IConfigurationSection>();
+            smtpSettingsSectionMock.Setup(x => x["Server"]).Returns("invalid.smtp.server");
+            _configurationMock.Setup(x => x.GetSection("SmtpSettings")).Returns(smtpSettingsSectionMock.Object);
+
+            _emailService = new EmailService(_configurationMock.Object, _loggerMock.Object, _dbContext);
+
+            // Act & Assert
+            Assert.ThrowsAsync<System.Net.Sockets.SocketException>(async () =>
+                await _emailService.SendPasswordResetEmailAsync(email, resetToken));
+            return Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task SendPasswordResetEmailAsync_SkipsSmtp_WhenSkipSmtpIsTrue()
+        {
+            // Arrange
+            var email = "test@example.com";
+            var resetToken = "test-reset-token";
+
+            // Simulate SkipSmtp = true
+            var skipSmtpSectionMock = new Mock<IConfigurationSection>();
+            skipSmtpSectionMock.Setup(x => x.Value).Returns("true");
+            _configurationMock.Setup(x => x.GetSection("SkipSmtp")).Returns(skipSmtpSectionMock.Object);
+
+            _emailService = new EmailService(_configurationMock.Object, _loggerMock.Object, _dbContext);
+
+            // Act
+            await _emailService.SendPasswordResetEmailAsync(email, resetToken);
+
+            // Assert
+            _loggerMock.Verify(
+                x => x.Log(
+                    It.Is<LogLevel>(l => l == LogLevel.Information),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("Skipping SMTP connection in test environment.")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+                ),
+                Times.Once
+            );
+        }
     }
 }

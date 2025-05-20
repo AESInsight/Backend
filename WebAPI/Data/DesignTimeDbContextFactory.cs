@@ -1,16 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Data;
 
+[ExcludeFromCodeCoverage]
 public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
         // First try to get the connection string from environment variable
         var connectionString = Environment.GetEnvironmentVariable("GH_SECRET_CONNECTIONSTRING");
-        
+
         // If not found, try to get it from appsettings.json
         if (string.IsNullOrEmpty(connectionString))
         {
