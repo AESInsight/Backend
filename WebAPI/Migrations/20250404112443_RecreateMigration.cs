@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-
+using System.Diagnostics.CodeAnalysis;
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
@@ -11,6 +11,7 @@ namespace Backend.Migrations
     public partial class RecreateMigration : Migration
     {
         /// <inheritdoc />
+    [ExcludeFromCodeCoverage]
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
