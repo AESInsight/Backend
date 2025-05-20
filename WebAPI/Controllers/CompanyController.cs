@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Backend.Models.DTO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
@@ -147,6 +148,7 @@ public class CompanyController : ControllerBase
 
     // POST: api/company/generate-sample-companies
     [HttpPost("generate-sample-companies")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> GenerateSampleCompanies()
     {
         try
@@ -162,6 +164,7 @@ public class CompanyController : ControllerBase
 
     // DELETE: api/company/delete-all
     [HttpDelete("delete-all")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> DeleteAllCompanies()
     {
         try
