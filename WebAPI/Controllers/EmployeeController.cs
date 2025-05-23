@@ -386,10 +386,12 @@ public class EmployeeController : ControllerBase
 
             var employeeIndustryDto = await _dbContext.Employee
                 .Where(e => e.EmployeeID == id)
-                .Select(e => new EmployeeIndustryDto
+                .Select(e => new EmployeeDto
                 {
                     EmployeeID = e.EmployeeID,
                     JobTitle = e.JobTitle,
+                    Experience = e.Experience,
+                    Gender = e.Gender,
                     CompanyID = e.CompanyID,
                     Industry = e.Company.Industry
                 })
