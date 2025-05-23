@@ -8,10 +8,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
+    [ExcludeFromCodeCoverage]
     public partial class RecreateMigration : Migration
     {
         /// <inheritdoc />
-    [ExcludeFromCodeCoverage]
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(

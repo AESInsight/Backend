@@ -405,6 +405,23 @@ namespace WebAPI.Tests.Controllers
         }
 
         [Test]
+        public async Task DeleteCompany_ReturnsNotFound_WhenExistingCompanyIsNull()
+        {
+            // Arrange
+            _companyServiceMock.Setup(s => s.GetCompanyByIdAsync(123)).ReturnsAsync((CompanyModel?)null!);
+
+            // Act
+            var result = await _controller.DeleteCompany(123) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var message = result.Value.GetType().GetProperty("message")?.GetValue(result.Value, null);
+            Assert.That(message, Is.EqualTo("Company not found"));
+        }
+
+        [Test]
         public async Task DeleteCompany_ReturnsInternalServerError_WhenExceptionIsThrown()
         {
             // Arrange

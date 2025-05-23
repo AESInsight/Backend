@@ -87,6 +87,24 @@ namespace WebAPI.Tests.Controllers
         }
 
         [Test]
+        public async Task GetEmployeeById_ReturnsNotFound_WhenKeyNotFoundExceptionIsThrown()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetEmployeeByIdAsync(42))
+                .ThrowsAsync(new KeyNotFoundException("Employee not found"));
+
+            // Act
+            var result = await _controller.GetEmployeeById(42) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var errorObj = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(errorObj, Is.EqualTo("Employee not found"));
+        }
+
+        [Test]
         public async Task GetEmployeesByCompanyId_ReturnsOkResultWithEmployees()
         {
             // Arrange
@@ -778,6 +796,217 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result.Value, Is.Not.Null);
             var errorObj = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
             Assert.That(errorObj, Is.EqualTo("An error occurred while retrieving salary differences"));
+        }
+
+        [Test]
+        public async Task BulkUploadEmployees_AssignsEmployeeId_WhenEmployeeIdIsZero()
+        {
+            // Arrange
+            var employees = new List<EmployeeModel>
+            {
+                new EmployeeModel { EmployeeID = 0, JobTitle = "Developer", Experience = 5, Gender = "Male", CompanyID = 2 }
+            };
+            _employeeServiceMock.Setup(s => s.GetMaxEmployeeIdAsync()).ReturnsAsync(100);
+            _employeeServiceMock.Setup(s => s.BulkCreateEmployeesAsync(It.IsAny<List<EmployeeModel>>()))
+                .ReturnsAsync((List<EmployeeModel> emps) => emps);
+
+            // Act
+            var result = await _controller.BulkUploadEmployees(employees) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+            var message = result.Value.GetType().GetProperty("message")?.GetValue(result.Value, null);
+            var processedCount = result.Value.GetType().GetProperty("processedCount")?.GetValue(result.Value, null);
+            Assert.That(message, Is.EqualTo("Successfully processed 1 employees"));
+            Assert.That(processedCount, Is.EqualTo(1));
+            Assert.That(employees[0].EmployeeID, Is.EqualTo(101)); // Should be assigned maxEmployeeId + 1
+        }
+
+        [Test]
+        public async Task DeleteEmployee_ReturnsOkResult_WhenEmployeeIsDeleted()
+        {
+            // Arrange
+            var employee = new EmployeeModel
+            {
+                EmployeeID = 1,
+                JobTitle = "Developer",
+                Experience = 5,
+                Gender = "Male",
+                CompanyID = 2
+            };
+            _employeeServiceMock.Setup(s => s.GetEmployeeByIdAsync(1)).ReturnsAsync(employee);
+            _employeeServiceMock.Setup(s => s.DeleteEmployeeAsync(1)).Returns(Task.FromResult(employee));
+
+            // Act
+            var result = await _controller.DeleteEmployee(1) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+            var message = result.Value.GetType().GetProperty("message")?.GetValue(result.Value, null);
+            Assert.That(message, Is.EqualTo("Employee deleted successfully"));
+        }
+
+        [Test]
+        public async Task DeleteEmployee_ReturnsBadRequest_WhenIdIsInvalid()
+        {
+            // Act
+            var result = await _controller.DeleteEmployee(0) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.EqualTo("Invalid employee ID"));
+        }
+
+        [Test]
+        public async Task DeleteEmployee_ReturnsNotFound_WhenEmployeeDoesNotExist()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetEmployeeByIdAsync(99)).ReturnsAsync((EmployeeModel?)null!);
+
+            // Act
+            var result = await _controller.DeleteEmployee(99) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var error = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(error, Is.EqualTo("Employee with ID 99 not found"));
+        }
+
+        [Test]
+        public async Task DeleteEmployee_ReturnsNotFound_WhenKeyNotFoundExceptionIsThrown()
+        {
+            // Arrange
+            var employee = new EmployeeModel
+            {
+                EmployeeID = 2,
+                JobTitle = "Tester",
+                Experience = 3,
+                Gender = "Female",
+                CompanyID = 2
+            };
+            _employeeServiceMock.Setup(s => s.GetEmployeeByIdAsync(2)).ReturnsAsync(employee);
+            _employeeServiceMock.Setup(s => s.DeleteEmployeeAsync(2))
+                .ThrowsAsync(new KeyNotFoundException("Employee not found"));
+
+            // Act
+            var result = await _controller.DeleteEmployee(2) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var error = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(error, Is.EqualTo("Employee not found"));
+        }
+
+        [Test]
+        public async Task DeleteEmployee_ReturnsInternalServerError_WhenExceptionIsThrown()
+        {
+            // Arrange
+            var employee = new EmployeeModel
+            {
+                EmployeeID = 3,
+                JobTitle = "Manager",
+                Experience = 10,
+                Gender = "Male",
+                CompanyID = 2
+            };
+            _employeeServiceMock.Setup(s => s.GetEmployeeByIdAsync(3)).ReturnsAsync(employee);
+            _employeeServiceMock.Setup(s => s.DeleteEmployeeAsync(3))
+                .ThrowsAsync(new System.Exception("Database error"));
+
+            // Act
+            var result = await _controller.DeleteEmployee(3) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+            object? error = null;
+            if (result.Value != null)
+            {
+                error = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            }
+            Assert.That(error, Is.EqualTo("An error occurred while deleting the employee"));
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryById_ReturnsOkResult_WithIndustryDto()
+        {
+            // Arrange
+            var industryDto = new EmployeeIndustryDto
+            {
+                EmployeeID = 1,
+                Industry = "Tech"
+            };
+            _employeeServiceMock.Setup(s => s.GetEmployeeIndustryByIdAsync(1)).ReturnsAsync(industryDto);
+
+            // Act
+            var result = await _controller.GetEmployeeIndustryById(1) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.Not.Null);
+            var returnedDto = result.Value as EmployeeIndustryDto;
+            Assert.That(returnedDto, Is.Not.Null);
+            Assert.That(returnedDto.EmployeeID, Is.EqualTo(1));
+            Assert.That(returnedDto.Industry, Is.EqualTo("Tech"));
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryById_ReturnsBadRequest_WhenIdIsInvalid()
+        {
+            // Act
+            var result = await _controller.GetEmployeeIndustryById(0) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(400));
+            var error = result.Value?.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(error, Is.EqualTo("Invalid employee ID"));
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryById_ReturnsNotFound_WhenIndustryDtoIsNull()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetEmployeeIndustryByIdAsync(99)).ReturnsAsync((EmployeeIndustryDto?)null);
+
+            // Act
+            var result = await _controller.GetEmployeeIndustryById(99) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var error = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(error, Is.EqualTo("Employee with ID 99 not found or company information is missing"));
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryById_ReturnsInternalServerError_WhenExceptionIsThrown()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetEmployeeIndustryByIdAsync(1))
+                .ThrowsAsync(new System.Exception("Database error"));
+
+            // Act
+            var result = await _controller.GetEmployeeIndustryById(1) as ObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(500));
+            Assert.That(result.Value, Is.Not.Null);
+            var error = result.Value.GetType().GetProperty("error")?.GetValue(result.Value, null);
+            Assert.That(error, Is.EqualTo("An error occurred while retrieving the employee's industry"));
         }
     }
 }

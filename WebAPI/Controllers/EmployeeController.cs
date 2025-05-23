@@ -195,6 +195,7 @@ public class EmployeeController : ControllerBase
     [ExcludeFromCodeCoverage]
     public async Task<IActionResult> GenerateSampleData()
     {
+        [ExcludeFromCodeCoverage]
         string GetRandomJobTitle(Random random)
         {
             var jobTitles = new[]
