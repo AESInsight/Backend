@@ -666,5 +666,48 @@ namespace WebAPI.Tests.Services
             Assert.That(developer.GenderData["Male"].EmployeeCount, Is.EqualTo(1));
             Assert.That(developer.GenderData["Male"].AverageSalary, Is.EqualTo(0));
         }
+
+        // Add this helper class inside your test file (outside the test class)
+        public class ThrowingDbContext : ApplicationDbContext
+        {
+            public ThrowingDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+            public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+            {
+                throw new Microsoft.EntityFrameworkCore.DbUpdateException("Simulated DB error", new Exception("Inner error"));
+            }
+        }
+
+        [Test]
+        public Task CreateCompaniesAsync_ThrowsException_WhenDbUpdateExceptionOccurs()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            var throwingDbContext = new ThrowingDbContext(options);
+            var loggerMock = new Mock<ILogger<CompanyService>>();
+            var service = new CompanyService(throwingDbContext, loggerMock.Object);
+
+            var companies = new List<CompanyModel>
+            {
+                new CompanyModel
+                {
+                    CompanyName = "Test",
+                    Industry = "Tech",
+                    CVR = "12345678",
+                    Email = "test@company.com"
+                }
+            };
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<Exception>(async () =>
+            {
+                await service.CreateCompaniesAsync(companies);
+            });
+            Assert.That(ex!.Message, Does.Contain("Database error while creating companies: Inner error"));
+            return Task.CompletedTask;
+        }
     }
 }

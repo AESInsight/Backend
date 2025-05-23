@@ -924,5 +924,22 @@ namespace WebAPI.Tests.Services
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Count, Is.EqualTo(0));
         }
+
+        [Test]
+        public void GetSalaryDifferencesByGenderAsync_ThrowsException_WhenDbContextFails()
+        {
+            // Arrange
+            var jobTitle = "Developer";
+            _dbContext.Dispose(); // Dispose context to force an exception
+            _dbContext = null!;
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+            {
+                await _service.GetSalaryDifferencesByGenderAsync(jobTitle);
+            });
+            Assert.That(ex, Is.Not.Null);
+            Assert.That(ex!.Message, Does.Contain("Cannot access a disposed context instance"));
+        }
     }
 }
