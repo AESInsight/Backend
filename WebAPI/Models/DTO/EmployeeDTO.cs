@@ -7,6 +7,5 @@ public class EmployeeDto
     public int Experience { get; set; }
     public string? Gender { get; set; }
     public int CompanyID { get; set; }
-    public string Industry { get; set; }
-
+    public string? Industry { get; set; }
 }

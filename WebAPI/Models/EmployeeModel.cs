@@ -21,7 +21,4 @@ public class EmployeeModel
     public CompanyModel? Company { get; set; } // Navigation property for the related Company
 
     public ICollection<SalaryModel> Salaries { get; set; } = new List<SalaryModel>();
-
-    [Required]
-    public string Industry { get; set; }
 }
