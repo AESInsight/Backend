@@ -384,23 +384,26 @@ public class EmployeeController : ControllerBase
                 return BadRequest(new { error = "Invalid employee ID" });
             }
 
-            var employeeIndustryDto = await _dbContext.Employee
+            var employeeDto = await _dbContext.Employee
+                .Include(e => e.Company)
                 .Where(e => e.EmployeeID == id)
-                .Select(e => new EmployeeIndustryDto
+                .Select(e => new EmployeeDto
                 {
                     EmployeeID = e.EmployeeID,
                     JobTitle = e.JobTitle,
+                    Experience = e.Experience,
+                    Gender = e.Gender,
                     CompanyID = e.CompanyID,
-                    Industry = e.Company.Industry
+                    Industry = e.Company != null ? e.Company.Industry : null
                 })
                 .FirstOrDefaultAsync();
 
-            if (employeeIndustryDto == null)
+            if (employeeDto == null)
             {
                 return NotFound(new { error = $"Employee with ID {id} not found or company information is missing" });
             }
 
-            return Ok(employeeIndustryDto);
+            return Ok(employeeDto);
         }
         catch (Exception ex)
         {
