@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Config;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)

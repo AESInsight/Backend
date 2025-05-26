@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Backend.Config;
 
+[ExcludeFromCodeCoverage]
 public class DatabaseConfig
 {
     public string ConnectionString { get; set; } = string.Empty;

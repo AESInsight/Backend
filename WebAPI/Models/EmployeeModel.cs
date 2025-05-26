@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Models;
 
+[ExcludeFromCodeCoverage]
 public class EmployeeModel
 {
     [Key] // Mark EmployeeID as the primary key
