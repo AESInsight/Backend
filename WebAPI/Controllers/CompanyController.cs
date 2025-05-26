@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Models;
 using Backend.Services;
 using Backend.Models.DTO;
+using Microsoft.EntityFrameworkCore;
+using Backend.Data;
 
 namespace Backend.Controllers;
 
@@ -10,10 +12,12 @@ namespace Backend.Controllers;
 public class CompanyController : ControllerBase
 {
     private readonly ICompanyService _companyService;
+    private readonly ApplicationDbContext _dbContext;
 
-    public CompanyController(ICompanyService companyService)
+    public CompanyController(ICompanyService companyService, ApplicationDbContext dbContext)
     {
         _companyService = companyService;
+        _dbContext = dbContext;
     }
 
     // GET: api/company
@@ -47,6 +51,9 @@ public class CompanyController : ControllerBase
         try
         {
             var company = await _companyService.GetCompanyByIdAsync(id);
+            if (company == null)
+                return NotFound(new { error = $"Company with ID {id} not found." });
+
             var companyDTO = new CompanyDTO
             {
                 CompanyID = company.CompanyID,
@@ -57,10 +64,6 @@ public class CompanyController : ControllerBase
             };
 
             return Ok(companyDTO);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
         }
         catch (Exception ex)
         {
@@ -90,6 +93,10 @@ public class CompanyController : ControllerBase
             await _companyService.CreateCompaniesAsync(companies);
             return Ok(new { message = "Companies inserted successfully", count = companies.Count });
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while inserting companies", details = ex.Message });
@@ -98,21 +105,34 @@ public class CompanyController : ControllerBase
 
     // PUT: api/company/{id}
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCompany(int id, [FromBody] CompanyModel company)
+    public async Task<IActionResult> UpdateCompany(int id, [FromBody] CompanyDTO companyDTO)
     {
         try
         {
-            if (company == null || id != company.CompanyID)
+            if (companyDTO == null || id != companyDTO.CompanyID)
             {
                 return BadRequest(new { message = "Invalid company data" });
             }
 
+            var company = new CompanyModel
+            {
+                CompanyID = companyDTO.CompanyID,
+                CompanyName = companyDTO.CompanyName,
+                Industry = companyDTO.Industry,
+                CVR = companyDTO.CVR,
+                Email = companyDTO.Email
+            };
+
             await _companyService.UpdateCompanyAsync(company);
-            return NoContent();
+            return Ok(new { message = "Company updated successfully" });
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
         {
@@ -132,8 +152,15 @@ public class CompanyController : ControllerBase
                 return NotFound(new { message = "Company not found" });
             }
 
+            // Check if company has employees
+            var hasEmployees = await _dbContext.Employee.AnyAsync(e => e.CompanyID == id);
+            if (hasEmployees)
+            {
+                return BadRequest(new { message = "Cannot delete company with associated employees" });
+            }
+
             await _companyService.DeleteCompanyAsync(id);
-            return NoContent();
+            return Ok(new { message = "Company deleted successfully" });
         }
         catch (KeyNotFoundException ex)
         {

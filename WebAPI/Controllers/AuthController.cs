@@ -93,15 +93,18 @@ namespace Backend.Controllers
         private string GenerateJwtToken(string Email, string role)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var keyString = jwtSettings["Key"] ?? "DefaultSecretKey";
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var keyString = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
+            var keyBytes = Encoding.UTF8.GetBytes(keyString);
+            var key = new SymmetricSecurityKey(keyBytes);
+            var keyId = jwtSettings["KeyId"] ?? throw new InvalidOperationException("JWT KeyId is not configured");
+            key.KeyId = keyId;
 
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, Email),
                 new Claim(ClaimTypes.Role, role),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             };
 
             var expireMinutes = double.Parse(jwtSettings["ExpireMinutes"] ?? "30");
@@ -111,7 +114,7 @@ namespace Backend.Controllers
                 audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(expireMinutes),
-                signingCredentials: creds
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -28,10 +28,6 @@ public class CompanyService : ICompanyService
     public async Task<CompanyModel> GetCompanyByIdAsync(int id)
     {
         var company = await _dbContext.Companies.FindAsync(id);
-        if (company == null)
-        {
-            throw new KeyNotFoundException($"Company with ID {id} not found.");
-        }
         return company;
     }
 
@@ -60,11 +56,12 @@ public class CompanyService : ICompanyService
     public async Task DeleteCompanyAsync(int id)
     {
         var company = await _dbContext.Companies.FindAsync(id);
-        if (company != null)
+        if (company == null)
         {
-            _dbContext.Companies.Remove(company);
-            await _dbContext.SaveChangesAsync();
+            return; // Return silently for non-existent company
         }
+        _dbContext.Companies.Remove(company);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAllCompaniesAsync()
@@ -78,12 +75,22 @@ public class CompanyService : ICompanyService
     {
         try
         {
+            if (companies == null || !companies.Any())
+            {
+                return; // Return silently for empty list
+            }
+
             // Get the next available CompanyID
             var maxId = await _dbContext.Companies.MaxAsync(c => (int?)c.CompanyID) ?? 0;
             var nextId = maxId + 1;
 
             foreach (var company in companies)
             {
+                if (string.IsNullOrEmpty(company.CompanyName))
+                {
+                    throw new ArgumentException("Company name cannot be empty.");
+                }
+
                 if (string.IsNullOrEmpty(company.CVR) || company.CVR.Length != 8 || !company.CVR.All(char.IsDigit))
                 {
                     throw new ArgumentException($"CVR for company '{company.CompanyName}' must be exactly 8 digits.");

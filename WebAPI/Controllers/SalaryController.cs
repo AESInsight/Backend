@@ -102,4 +102,43 @@ public class SalaryController : ControllerBase
 
         return Ok(salaries);
     }
+
+    // PUT: api/salary/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateSalary(int id, [FromBody] SalaryModel updatedSalary)
+    {
+        if (id <= 0 || updatedSalary.Salary < 0)
+        {
+            return BadRequest("Invalid salary ID or amount.");
+        }
+
+        var existingSalary = await _dbContext.Salaries.FindAsync(id);
+        if (existingSalary == null)
+        {
+            return NotFound(new { message = $"Salary with ID {id} not found." });
+        }
+
+        existingSalary.Salary = updatedSalary.Salary;
+        existingSalary.Timestamp = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { message = "Salary updated successfully." });
+    }
+
+    // DELETE: api/salary/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteSalary(int id)
+    {
+        var salary = await _dbContext.Salaries.FindAsync(id);
+        if (salary == null)
+        {
+            return NotFound(new { message = $"Salary with ID {id} not found." });
+        }
+
+        _dbContext.Salaries.Remove(salary);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { message = "Salary deleted successfully." });
+    }
 }
