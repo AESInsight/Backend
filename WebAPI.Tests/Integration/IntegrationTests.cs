@@ -78,7 +78,7 @@ public class IntegrationTests : IClassFixture<WebApplicationFactory<Program>>
         return allEmployees.First(e => e.JobTitle == employee.JobTitle);
     }
 
-    private async Task<SalaryDTO> CreateTestSalary(int employeeId)
+    private async Task<SalaryDto> CreateTestSalary(int employeeId)
     {
         var salary = new SalaryModel
         {
@@ -89,7 +89,7 @@ public class IntegrationTests : IClassFixture<WebApplicationFactory<Program>>
         var response = await _client.PostAsJsonAsync("/api/salary/add", salary);
         response.EnsureSuccessStatusCode();
         
-        var salaries = await _client.GetFromJsonAsync<List<SalaryDTO>>($"/api/salary/employee/{employeeId}");
+        var salaries = await _client.GetFromJsonAsync<List<SalaryDto>>($"/api/salary/employee/{employeeId}");
         return salaries.First();
     }
 
@@ -152,7 +152,7 @@ public class IntegrationTests : IClassFixture<WebApplicationFactory<Program>>
         var salary = await CreateTestSalary(employee.EmployeeID);
 
         Assert.NotNull(salary);
-        Assert.Equal(50000.0m, salary.Salary);
+        Assert.Equal(50000.0, salary.Salary, 0.01);
     }
 
     [Fact]
