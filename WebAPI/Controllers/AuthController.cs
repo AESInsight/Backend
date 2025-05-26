@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers
 {
@@ -119,13 +120,14 @@ namespace Backend.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
+    [ExcludeFromCodeCoverage]
     public class LoginRequest
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 
+    [ExcludeFromCodeCoverage]
     public class RegisterRequest
     {
         public string Email { get; set; } = null!;

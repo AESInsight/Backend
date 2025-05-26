@@ -280,4 +280,29 @@ public class EmployeeService : IEmployeeService
 
         return result;
     }
+
+    public async Task<EmployeeIndustryDto?> GetEmployeeIndustryByIdAsync(int id)
+    {
+        var employee = await _context.Employee
+            .Include(e => e.Company)
+            .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+        if (employee == null || employee.Company == null)
+            return null;
+
+        return new EmployeeIndustryDto
+        {
+            EmployeeID = employee.EmployeeID,
+            CompanyID = employee.CompanyID,
+            Industry = employee.Company.Industry
+        };
+    }
+
+    public async Task<List<EmployeeModel>> GetEmployeesByCompanyIdAsync(int companyId)
+    {
+        return await _context.Employee
+            .Where(e => e.CompanyID == companyId)
+            .Include(e => e.Company)
+            .ToListAsync();
+    }
 }

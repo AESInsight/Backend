@@ -16,4 +16,6 @@ public interface IEmployeeService
     Task<List<EmployeeModel>> GetEmployeesByJobTitleAsync(string jobTitle);
     Task<Dictionary<string, List<SalaryDifferenceDTO>>> GetSalaryDifferencesByGenderAsync(string jobTitle);
     Task<Dictionary<string, List<SalaryDifferenceDTO>>> GetAllSalaryDifferencesByGenderAsync();
+    Task<EmployeeIndustryDto?> GetEmployeeIndustryByIdAsync(int id);
+    Task<List<EmployeeModel>> GetEmployeesByCompanyIdAsync(int companyId);
 }

@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Backend.Models.DTO;
 
+[ExcludeFromCodeCoverage]
 public class SalaryDto
 {
     public int SalaryID { get; set; } // Unique ID of the salary entry
