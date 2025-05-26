@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/AESInsight/Backend/compare/v1.10.1...v1.10.2) (2025-05-26)
+
+
+### Bug Fixes
+
+* fix backend deployment ([0f9e2f4](https://github.com/AESInsight/Backend/commit/0f9e2f444c4fa18ae3b8d4c6b5b5d2fd7ff37794))
+
 ## [1.10.1](https://github.com/AESInsight/Backend/compare/v1.10.0...v1.10.1) (2025-05-13)
 
 
