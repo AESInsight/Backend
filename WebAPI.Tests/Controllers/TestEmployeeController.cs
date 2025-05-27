@@ -941,7 +941,7 @@ namespace WebAPI.Tests.Controllers
         public async Task GetEmployeeIndustryById_ReturnsOkResult_WithIndustryDto()
         {
             // Arrange
-            var industryDto = new EmployeeIndustryDto
+            var industryDto = new EmployeeDto
             {
                 EmployeeID = 1,
                 Industry = "Tech"
@@ -955,7 +955,7 @@ namespace WebAPI.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
-            var returnedDto = result.Value as EmployeeIndustryDto;
+            var returnedDto = result.Value as EmployeeDto;
             Assert.That(returnedDto, Is.Not.Null);
             Assert.That(returnedDto.EmployeeID, Is.EqualTo(1));
             Assert.That(returnedDto.Industry, Is.EqualTo("Tech"));
@@ -978,7 +978,7 @@ namespace WebAPI.Tests.Controllers
         public async Task GetEmployeeIndustryById_ReturnsNotFound_WhenIndustryDtoIsNull()
         {
             // Arrange
-            _employeeServiceMock.Setup(s => s.GetEmployeeIndustryByIdAsync(99)).ReturnsAsync((EmployeeIndustryDto?)null);
+            _employeeServiceMock.Setup(s => s.GetEmployeeIndustryByIdAsync(99)).ReturnsAsync((EmployeeDto?)null);
 
             // Act
             var result = await _controller.GetEmployeeIndustryById(99) as NotFoundObjectResult;
