@@ -10,12 +10,12 @@ public interface IEmployeeService
     Task<EmployeeModel> UpdateEmployeeAsync(int id, EmployeeModel employee);
     Task<EmployeeModel> DeleteEmployeeAsync(int id);
     Task<List<EmployeeModel>> BulkCreateEmployeesAsync(List<EmployeeModel> employees);
-    Task DeleteAllEmployeesAsync(); 
+    Task DeleteAllEmployeesAsync();
     Task<int> GetMaxEmployeeIdAsync();
     Task<List<string>> GetAllJobTitlesAsync();
     Task<List<EmployeeModel>> GetEmployeesByJobTitleAsync(string jobTitle);
     Task<Dictionary<string, List<SalaryDifferenceDTO>>> GetSalaryDifferencesByGenderAsync(string jobTitle);
     Task<Dictionary<string, List<SalaryDifferenceDTO>>> GetAllSalaryDifferencesByGenderAsync();
-    Task<EmployeeIndustryDto?> GetEmployeeIndustryByIdAsync(int id);
+    Task<EmployeeDto?> GetEmployeeIndustryByIdAsync(int id);
     Task<List<EmployeeModel>> GetEmployeesByCompanyIdAsync(int companyId);
 }

@@ -63,7 +63,7 @@ public class EmployeeController : ControllerBase
                 return NotFound(new { message = $"No employees found for CompanyID {companyId}" });
             }
 
-            var employeeDtos = employees.Select(e => new EmployeeDto
+            var employeeDto = employees.Select(e => new EmployeeDto
             {
                 EmployeeID = e.EmployeeID,
                 JobTitle = e.JobTitle,
@@ -72,7 +72,7 @@ public class EmployeeController : ControllerBase
                 CompanyID = e.CompanyID
             }).ToList();
 
-            return Ok(employeeDtos);
+            return Ok(employeeDto);
         }
         catch (Exception ex)
         {
@@ -274,7 +274,7 @@ public class EmployeeController : ControllerBase
                 return NotFound(new { Status = "NotFound", Message = "No employees found in the database." });
             }
 
-            var employeeDtos = employees.Select(e => new EmployeeDto
+            var employeeDto = employees.Select(e => new EmployeeDto
             {
                 EmployeeID = e.EmployeeID,
                 JobTitle = e.JobTitle,
@@ -283,7 +283,7 @@ public class EmployeeController : ControllerBase
                 CompanyID = e.CompanyID
             }).ToList();
 
-            return Ok(employeeDtos);
+            return Ok(employeeDto);
         }
         catch (Exception ex)
         {
@@ -382,14 +382,14 @@ public class EmployeeController : ControllerBase
                 return BadRequest(new { error = "Invalid employee ID" });
             }
 
-            var employeeIndustryDto = await _employeeService.GetEmployeeIndustryByIdAsync(id);
+            var employeeDto = await _employeeService.GetEmployeeIndustryByIdAsync(id);
 
-            if (employeeIndustryDto == null)
+            if (employeeDto == null)
             {
                 return NotFound(new { error = $"Employee with ID {id} not found or company information is missing" });
             }
 
-            return Ok(employeeIndustryDto);
+            return Ok(employeeDto);
         }
         catch (Exception ex)
         {
