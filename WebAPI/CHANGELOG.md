@@ -1,3 +1,13 @@
+## [1.10.4](https://github.com/AESInsight/Backend/compare/v1.10.3...v1.10.4) (2025-05-27)
+
+
+### Bug Fixes
+
+* deletes EmployeeIndustry ([4e3bf52](https://github.com/AESInsight/Backend/commit/4e3bf52b1588d2e67fb55ed08b0db5becf1ef1e4))
+* deletes files ([9c29dd0](https://github.com/AESInsight/Backend/commit/9c29dd0d5eb02ea671c6a8fc90c666d81d6969ca))
+* Employee Industry ([ea30d6b](https://github.com/AESInsight/Backend/commit/ea30d6bcc1dd0a614a4b28dfc9148d6d62fc6272))
+* EmployeModel ([4e5d10e](https://github.com/AESInsight/Backend/commit/4e5d10edfadf35eb294fa8830a7139d9bda281d2))
+
 ## [1.10.3](https://github.com/AESInsight/Backend/compare/v1.10.2...v1.10.3) (2025-05-26)
 
 
