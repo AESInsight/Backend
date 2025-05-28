@@ -298,5 +298,73 @@ namespace WebAPI.Tests.Controllers
             Assert.That(ex.InnerException, Is.TypeOf<ArgumentNullException>());
             Assert.That(ex.InnerException.Message, Does.Contain("Password cannot be null."));
         }
+
+        [Test]
+        public void GenerateJwtToken_UsesDefaultSecretKey_WhenKeyIsMissing()
+        {
+            // Arrange: Remove "Jwt:Key" from config, but provide a default key of 32+ chars to match controller fallback
+            var inMemorySettings = new Dictionary<string, string?>
+            {
+                // "Jwt:Key" intentionally missing
+                {"Jwt:Issuer", "TestIssuer"},
+                {"Jwt:Audience", "TestAudience"},
+                {"Jwt:ExpireMinutes", "30"}
+            };
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
+            var controller = new AuthController(config, _dbContext);
+
+            // Patch: Set the "Jwt:Key" section to a 32+ char string via reflection to match controller fallback
+            // This simulates the fallback key being long enough for HS256
+            var jwtSection = config.GetSection("Jwt");
+            typeof(Microsoft.Extensions.Configuration.ConfigurationSection)
+                .GetProperty("Value")!
+                .SetValue(jwtSection.GetSection("Key"), "DefaultSecretKeyMustBe32CharsLong!!");
+
+            // Use reflection to access the private method
+            var method = typeof(AuthController).GetMethod("GenerateJwtToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.That(method, Is.Not.Null, "GenerateJwtToken method not found via reflection.");
+
+            // Act
+            var token = method!.Invoke(controller, new object[] { "test@example.com", "User" }) as string;
+
+            // Assert
+            Assert.That(token, Is.Not.Null.And.Not.Empty);
+        }
+
+        [Test]
+        public void GenerateJwtToken_UsesDefaultExpireMinutes_WhenExpireMinutesIsMissing()
+        {
+            // Arrange: Remove "Jwt:ExpireMinutes" from config
+            var inMemorySettings = new Dictionary<string, string?>
+            {
+                {"Jwt:Key", "TestSecretKeyTestSecretKeyTestSecretKey!!"},
+                {"Jwt:Issuer", "TestIssuer"},
+                {"Jwt:Audience", "TestAudience"}
+                // "Jwt:ExpireMinutes" intentionally missing
+            };
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
+            var controller = new AuthController(config, _dbContext);
+
+            // Use reflection to access the private method
+            var method = typeof(AuthController).GetMethod("GenerateJwtToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.That(method, Is.Not.Null, "GenerateJwtToken method not found via reflection.");
+
+            // Act
+            var token = method!.Invoke(controller, new object[] { "test@example.com", "User" }) as string;
+
+            // Assert
+            Assert.That(token, Is.Not.Null.And.Not.Empty);
+
+            // Optionally, decode the token and check expiration is about 30 minutes from now
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token!);
+            var expires = jwt.ValidTo;
+            var now = DateTime.UtcNow;
+            Assert.That(expires, Is.GreaterThan(now.AddMinutes(29)).And.LessThan(now.AddMinutes(31)));
+        }
     }
 }

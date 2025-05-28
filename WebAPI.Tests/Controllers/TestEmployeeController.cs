@@ -162,6 +162,23 @@ namespace WebAPI.Tests.Controllers
         }
 
         [Test]
+        public async Task GetEmployeesByCompanyId_ReturnsNotFound_WhenEmployeesIsNull()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetEmployeesByCompanyIdAsync(123))!.ReturnsAsync((List<EmployeeModel>?)null);
+
+            // Act
+            var result = await _controller.GetEmployeesByCompanyId(123) as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var message = result.Value.GetType().GetProperty("message")?.GetValue(result.Value, null);
+            Assert.That(message, Is.EqualTo("No employees found for CompanyID 123"));
+        }
+
+        [Test]
         public async Task GetEmployeesByCompanyId_ReturnsInternalServerError_WhenExceptionIsThrown()
         {
             // Arrange
@@ -499,6 +516,25 @@ namespace WebAPI.Tests.Controllers
         {
             // Arrange
             _employeeServiceMock.Setup(s => s.GetAllEmployeesAsync()).ReturnsAsync(new List<EmployeeModel>());
+
+            // Act
+            var result = await _controller.GetAllEmployees() as NotFoundObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+            Assert.That(result.Value, Is.Not.Null);
+            var status = result.Value.GetType().GetProperty("Status")?.GetValue(result.Value, null);
+            var message = result.Value.GetType().GetProperty("Message")?.GetValue(result.Value, null);
+            Assert.That(status, Is.EqualTo("NotFound"));
+            Assert.That(message, Is.EqualTo("No employees found in the database."));
+        }
+
+        [Test]
+        public async Task GetAllEmployees_ReturnsNotFound_WhenEmployeesIsNull()
+        {
+            // Arrange
+            _employeeServiceMock.Setup(s => s.GetAllEmployeesAsync())!.ReturnsAsync((List<EmployeeModel>?)null);
 
             // Act
             var result = await _controller.GetAllEmployees() as NotFoundObjectResult;

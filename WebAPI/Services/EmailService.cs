@@ -78,17 +78,10 @@ public class EmailService : IEmailService
 
         message.Body = bodyBuilder.ToMessageBody();
 
-        using (var client = new SmtpClient())
-        {
-            await SendEmailWithSmtpAsync(client, smtpServer!, smtpPort, message);
-        }
-
-    }
-
-    [ExcludeFromCodeCoverage]
-    private async Task SendEmailWithSmtpAsync(SmtpClient client, string smtpServer, int smtpPort, MimeMessage message)
-    {
+        using var client = new SmtpClient();
         await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
+
+        // Use our fixed one.com credentials
         await client.AuthenticateAsync("cff@aes-insight.dk", "#SecurePassword123");
         await client.SendAsync(message);
         await client.DisconnectAsync(true);

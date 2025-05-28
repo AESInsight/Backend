@@ -204,6 +204,37 @@ namespace WebAPI.Tests.Services
         }
 
         [Test]
+        public async Task UpdateCompanyAsync_ThrowsArgumentException_WhenCVRContainsNonDigits()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "Test",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var invalidCompany = new CompanyModel
+            {
+                CompanyID = company.CompanyID,
+                CompanyName = "Test",
+                Industry = "Tech",
+                CVR = "1234567A", // Not all digits
+                Email = "test@company.com"
+            };
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await _service.UpdateCompanyAsync(invalidCompany);
+            });
+            Assert.That(ex!.Message, Is.EqualTo("CVR must be exactly 8 digits."));
+        }
+
+        [Test]
         public async Task DeleteCompanyAsync_RemovesCompany_WhenCompanyExists()
         {
             // Arrange
@@ -325,6 +356,29 @@ namespace WebAPI.Tests.Services
                     CompanyName = "InvalidCVR",
                     Industry = "Tech",
                     CVR = "1234", // Invalid CVR
+                    Email = "invalidcvr@test.com"
+                }
+            };
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await _service.CreateCompaniesAsync(companies);
+            });
+            Assert.That(ex!.Message, Does.Contain("CVR for company 'InvalidCVR' must be exactly 8 digits."));
+        }
+
+        [Test]
+        public void CreateCompaniesAsync_ThrowsArgumentException_WhenCVRContainsNonDigits()
+        {
+            // Arrange
+            var companies = new List<CompanyModel>
+            {
+                new CompanyModel
+                {
+                    CompanyName = "InvalidCVR",
+                    Industry = "Tech",
+                    CVR = "1234567A", // Not all digits
                     Email = "invalidcvr@test.com"
                 }
             };
@@ -667,7 +721,7 @@ namespace WebAPI.Tests.Services
             Assert.That(developer.GenderData["Male"].AverageSalary, Is.EqualTo(0));
         }
 
-        // Add this helper class inside your test file (outside the test class)
+        // Helper class to simulate a DbContext that throws an exception
         public class ThrowingDbContext : ApplicationDbContext
         {
             public ThrowingDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -708,6 +762,50 @@ namespace WebAPI.Tests.Services
             });
             Assert.That(ex!.Message, Does.Contain("Database error while creating companies: Inner error"));
             return Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task GetAverageSalariesForJobsInIndustryAsync_ReturnsData_WhenCompaniesExistInIndustry()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var employee = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Developer",
+                Gender = "Male"
+            };
+            _dbContext.Employee.Add(employee);
+            await _dbContext.SaveChangesAsync();
+
+            var salary = new SalaryModel
+            {
+                EmployeeID = employee.EmployeeID,
+                Salary = 60000,
+                Timestamp = DateTime.UtcNow
+            };
+            _dbContext.Salaries.Add(salary);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetAverageSalariesForJobsInIndustryAsync("Tech");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result[0].JobTitle, Is.EqualTo("Developer"));
+            Assert.That(result[0].GenderData.ContainsKey("Male"), Is.True);
+            Assert.That(result[0].GenderData["Male"].AverageSalary, Is.EqualTo(60000));
+            Assert.That(result[0].GenderData["Male"].EmployeeCount, Is.EqualTo(1));
         }
     }
 }
