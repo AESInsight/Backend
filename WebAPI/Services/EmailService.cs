@@ -6,6 +6,8 @@ using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace Backend.Services;
 
@@ -76,10 +78,17 @@ public class EmailService : IEmailService
 
         message.Body = bodyBuilder.ToMessageBody();
 
-        using var client = new SmtpClient();
-        await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
+        using (var client = new SmtpClient())
+        {
+            await SendEmailWithSmtpAsync(client, smtpServer!, smtpPort, message);
+        }
 
-        // Use our fixed one.com credentials
+    }
+
+    [ExcludeFromCodeCoverage]
+    private async Task SendEmailWithSmtpAsync(SmtpClient client, string smtpServer, int smtpPort, MimeMessage message)
+    {
+        await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
         await client.AuthenticateAsync("cff@aes-insight.dk", "#SecurePassword123");
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
