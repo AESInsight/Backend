@@ -13,16 +13,8 @@ namespace Backend.Extensions
     {
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (env == "Testing")
-            {
-                // Skip real DB setup in tests
-                return services;
-            }
-
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            if (string.IsNullOrEmpty(connectionString))
-                throw new InvalidOperationException("GitHub secret connection string not found");
+            var connectionString = Environment.GetEnvironmentVariable("GH_SECRET_CONNECTIONSTRING") 
+                ?? throw new InvalidOperationException("GitHub secret connection string not found");
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseMySql(
