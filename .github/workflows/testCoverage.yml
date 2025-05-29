@@ -18,6 +18,9 @@ jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
 
+    env:
+      GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,13 +54,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: '**/test-results.trx'
+          path: "**/test-results.trx"
 
       - name: Upload coverage report (cobertura)
         uses: actions/upload-artifact@v4
         with:
           name: cobertura-coverage
-          path: '**/coverage.cobertura.xml'
+          path: "**/coverage.cobertura.xml"
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
