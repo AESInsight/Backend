@@ -96,11 +96,7 @@ app.MapControllers(); // Map controller routes
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-    if (env != "Testing")
-    {
-        dbContext.Database.Migrate(); // Apply pending migrations to the database
-    }
+    dbContext.Database.Migrate(); // Apply pending migrations to the database
     // Optionally, call a method to seed additional data if needed
 
     // Query company with ID 4
@@ -118,5 +114,3 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run(); // Run the application
-
-public partial class Program { }
