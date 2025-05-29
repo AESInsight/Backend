@@ -18,6 +18,9 @@ jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
 
+    env:
+      GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}   # <- Her sætter vi miljøvariablen
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
