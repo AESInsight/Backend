@@ -6,9 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
-/// <summary>
-/// Controller for managing company-related operations
-/// </summary>
 [ApiController]
 [Route("api/company")]
 public class CompanyController : ControllerBase
@@ -20,9 +17,7 @@ public class CompanyController : ControllerBase
         _companyService = companyService;
     }
 
-    /// <summary>
-    /// Retrieves all companies
-    /// </summary>
+    // GET: api/company
     [HttpGet]
     public async Task<IActionResult> GetAllCompanies()
     {
@@ -46,9 +41,7 @@ public class CompanyController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Retrieves a company by its ID
-    /// </summary>
+    // GET: api/company/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCompanyById(int id)
     {
@@ -76,9 +69,7 @@ public class CompanyController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Creates new companies
-    /// </summary>
+    // POST: api/company
     [HttpPost]
     public async Task<IActionResult> InsertCompanies([FromBody] List<CompanyDTO> companyDTOs)
     {
@@ -100,19 +91,13 @@ public class CompanyController : ControllerBase
             await _companyService.CreateCompaniesAsync(companies);
             return Ok(new { message = "Companies inserted successfully", count = companies.Count });
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "An error occurred while inserting companies", details = ex.Message });
         }
     }
 
-    /// <summary>
-    /// Updates an existing company
-    /// </summary>
+    // PUT: api/company/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCompany(int id, [FromBody] CompanyModel company)
     {
@@ -136,9 +121,7 @@ public class CompanyController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Deletes a company by its ID
-    /// </summary>
+    // DELETE: api/company/{id}
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCompany(int id)
     {
@@ -163,9 +146,38 @@ public class CompanyController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Retrieves all unique industries
-    /// </summary>
+    // POST: api/company/generate-sample-companies
+    [HttpPost("generate-sample-companies")]
+    [ExcludeFromCodeCoverage]
+    public async Task<IActionResult> GenerateSampleCompanies()
+    {
+        try
+        {
+            await _companyService.GenerateSampleCompaniesAsync();
+            return Ok(new { message = "Sample companies generated successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while generating sample companies", details = ex.Message });
+        }
+    }
+
+    // DELETE: api/company/delete-all
+    [HttpDelete("delete-all")]
+    [ExcludeFromCodeCoverage]
+    public async Task<IActionResult> DeleteAllCompanies()
+    {
+        try
+        {
+            await _companyService.DeleteAllCompaniesAsync();
+            return Ok(new { message = "All companies deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An error occurred while deleting all companies", details = ex.Message });
+        }
+    }
+
     [HttpGet("getAllIndustries")]
     public async Task<IActionResult> GetAllIndustries()
     {
@@ -180,9 +192,6 @@ public class CompanyController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Retrieves average salaries for jobs in a specific industry
-    /// </summary>
     [HttpGet("getAverageSalaryForJobsIn{industry}")]
     public async Task<IActionResult> GetAverageSalariesForJobsInIndustry(string industry)
     {
@@ -202,44 +211,4 @@ public class CompanyController : ControllerBase
             return StatusCode(500, new { error = "An error occurred while retrieving salary averages", details = ex.Message });
         }
     }
-
-    #region Development/Testing Endpoints
-
-    /// <summary>
-    /// Generates sample companies (Development/Testing only)
-    /// </summary>
-    [HttpPost("generate-sample-companies")]
-    [ExcludeFromCodeCoverage]
-    public async Task<IActionResult> GenerateSampleCompanies()
-    {
-        try
-        {
-            await _companyService.GenerateSampleCompaniesAsync();
-            return Ok(new { message = "Sample companies generated successfully" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while generating sample companies", details = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Deletes all companies (Development/Testing only)
-    /// </summary>
-    [HttpDelete("delete-all")]
-    [ExcludeFromCodeCoverage]
-    public async Task<IActionResult> DeleteAllCompanies()
-    {
-        try
-        {
-            await _companyService.DeleteAllCompaniesAsync();
-            return Ok(new { message = "All companies deleted successfully" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "An error occurred while deleting all companies", details = ex.Message });
-        }
-    }
-
-    #endregion
 }
