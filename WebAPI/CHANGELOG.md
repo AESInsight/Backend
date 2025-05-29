@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/AESInsight/Backend/compare/v1.10.4...v1.11.0) (2025-05-29)
+
+
+### Features
+
+* integrationtest2,2 ([d2989b2](https://github.com/AESInsight/Backend/commit/d2989b291fd1b36bb86a067c1651dbd331c30600))
+
 ## [1.10.4](https://github.com/AESInsight/Backend/compare/v1.10.3...v1.10.4) (2025-05-27)
 
 
