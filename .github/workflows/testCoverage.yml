@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}   # <- Her sætter vi miljøvariablen
+      GH_SECRET_CONNECTIONSTRING: ${{ secrets.GH_SECRET_CONNECTIONSTRING }}
 
     steps:
       - name: Checkout code
