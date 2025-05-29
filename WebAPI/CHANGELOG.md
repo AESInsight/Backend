@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/AESInsight/Backend/compare/v2.0.0...v2.0.1) (2025-05-29)
+
+
+### Bug Fixes
+
+* revert latest release ([820c19a](https://github.com/AESInsight/Backend/commit/820c19a297d641dc0efe90f0583d7a239371b221))
+
 # [2.0.0](https://github.com/AESInsight/Backend/compare/v1.11.0...v2.0.0) (2025-05-29)
 
 
