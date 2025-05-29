@@ -111,7 +111,7 @@ public class EmployeeService : IEmployeeService
         try
         {
             Console.WriteLine($"Getting salary differences for job title: {jobTitle}");
-            
+
             // Get all relevant employees with their latest salary per month
             var employeeSalaries = await _context.Employee
                 .Where(e => e.JobTitle == jobTitle)
@@ -119,7 +119,8 @@ public class EmployeeService : IEmployeeService
                     _context.Salaries,
                     e => e.EmployeeID,
                     s => s.EmployeeID,
-                    (e, s) => new {
+                    (e, s) => new
+                    {
                         e.EmployeeID,
                         e.Gender,
                         s.Salary,
@@ -127,12 +128,14 @@ public class EmployeeService : IEmployeeService
                     }
                 )
                 .OrderByDescending(x => x.Timestamp)
-                .GroupBy(x => new {
+                .GroupBy(x => new
+                {
                     x.EmployeeID,
                     Year = x.Timestamp.Year,
                     Month = x.Timestamp.Month
                 })
-                .Select(g => new {
+                .Select(g => new
+                {
                     g.First().EmployeeID,
                     g.First().Gender,
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1),
@@ -151,7 +154,8 @@ public class EmployeeService : IEmployeeService
             // Group by month and gender
             var monthlyGroups = employeeSalaries
                 .GroupBy(x => new { x.Month, x.Gender })
-                .Select(g => new {
+                .Select(g => new
+                {
                     Month = g.Key.Month,
                     Gender = g.Key.Gender,
                     AverageSalary = Math.Round(g.Average(x => x.Salary), 2)
@@ -201,14 +205,15 @@ public class EmployeeService : IEmployeeService
         try
         {
             Console.WriteLine("Getting all salary differences");
-            
+
             // Get all employees with their latest salary per month
             var employeeSalaries = await _context.Employee
                 .Join(
                     _context.Salaries,
                     e => e.EmployeeID,
                     s => s.EmployeeID,
-                    (e, s) => new {
+                    (e, s) => new
+                    {
                         e.EmployeeID,
                         e.Gender,
                         s.Salary,
@@ -216,12 +221,14 @@ public class EmployeeService : IEmployeeService
                     }
                 )
                 .OrderByDescending(x => x.Timestamp)
-                .GroupBy(x => new {
+                .GroupBy(x => new
+                {
                     x.EmployeeID,
                     Year = x.Timestamp.Year,
                     Month = x.Timestamp.Month
                 })
-                .Select(g => new {
+                .Select(g => new
+                {
                     g.First().EmployeeID,
                     g.First().Gender,
                     Month = new DateTime(g.Key.Year, g.Key.Month, 1),
@@ -240,7 +247,8 @@ public class EmployeeService : IEmployeeService
             // Group by month and gender
             var monthlyGroups = employeeSalaries
                 .GroupBy(x => new { x.Month, x.Gender })
-                .Select(g => new {
+                .Select(g => new
+                {
                     Month = g.Key.Month,
                     Gender = g.Key.Gender,
                     AverageSalary = Math.Round(g.Average(x => x.Salary), 2)
@@ -279,5 +287,30 @@ public class EmployeeService : IEmployeeService
         }
 
         return result;
+    }
+
+    public async Task<EmployeeDto?> GetEmployeeIndustryByIdAsync(int id)
+    {
+        var employee = await _context.Employee
+            .Include(e => e.Company)
+            .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+        if (employee == null || employee.Company == null)
+            return null;
+
+        return new EmployeeDto
+        {
+            EmployeeID = employee.EmployeeID,
+            CompanyID = employee.CompanyID,
+            Industry = employee.Company.Industry
+        };
+    }
+
+    public async Task<List<EmployeeModel>> GetEmployeesByCompanyIdAsync(int companyId)
+    {
+        return await _context.Employee
+            .Where(e => e.CompanyID == companyId)
+            .Include(e => e.Company)
+            .ToListAsync();
     }
 }

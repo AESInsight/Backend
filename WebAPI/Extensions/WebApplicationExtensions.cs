@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Backend.Models;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class WebApplicationExtensions
     {
         public static IApplicationBuilder UseSwaggerDevelop(this IApplicationBuilder app)

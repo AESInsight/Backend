@@ -1,3 +1,39 @@
+# [1.11.0](https://github.com/AESInsight/Backend/compare/v1.10.4...v1.11.0) (2025-05-29)
+
+
+### Features
+
+* integrationtest2,2 ([d2989b2](https://github.com/AESInsight/Backend/commit/d2989b291fd1b36bb86a067c1651dbd331c30600))
+
+## [1.10.4](https://github.com/AESInsight/Backend/compare/v1.10.3...v1.10.4) (2025-05-27)
+
+
+### Bug Fixes
+
+* deletes EmployeeIndustry ([4e3bf52](https://github.com/AESInsight/Backend/commit/4e3bf52b1588d2e67fb55ed08b0db5becf1ef1e4))
+* deletes files ([9c29dd0](https://github.com/AESInsight/Backend/commit/9c29dd0d5eb02ea671c6a8fc90c666d81d6969ca))
+* Employee Industry ([ea30d6b](https://github.com/AESInsight/Backend/commit/ea30d6bcc1dd0a614a4b28dfc9148d6d62fc6272))
+* EmployeModel ([4e5d10e](https://github.com/AESInsight/Backend/commit/4e5d10edfadf35eb294fa8830a7139d9bda281d2))
+
+## [1.10.3](https://github.com/AESInsight/Backend/compare/v1.10.2...v1.10.3) (2025-05-26)
+
+
+### Bug Fixes
+
+* Auth and salary controller tests ([da775f4](https://github.com/AESInsight/Backend/commit/da775f4825b86b37c14a32da0c93523b0f84f19a))
+* Email and salary service tests ([52b491f](https://github.com/AESInsight/Backend/commit/52b491ff98acaa3db10eba1e94d8fd2f3d4bd4ad))
+* employee controller tests ([93481c8](https://github.com/AESInsight/Backend/commit/93481c88486aed407221236b4947c9cbc1fb57c2))
+* Excludes stuff from coverage ([6d6a1c7](https://github.com/AESInsight/Backend/commit/6d6a1c70f94f84e5524e3f6b3264630874e12575))
+* fix ([edbe52e](https://github.com/AESInsight/Backend/commit/edbe52ee45ec80a4598218832b0de7c2670304c4))
+* fix ([85400ce](https://github.com/AESInsight/Backend/commit/85400ce86497483c2cd1e928e8e5bfcbd0709282))
+* here we go again ([1b25e56](https://github.com/AESInsight/Backend/commit/1b25e5648669bec9a6a8bc2cc5a4b66c1eb28cbf))
+* Improved Company controller tests ([ab6d2c1](https://github.com/AESInsight/Backend/commit/ab6d2c1c3d0c6c20f62f57efe72774de841e5952))
+* test ([a3cb027](https://github.com/AESInsight/Backend/commit/a3cb027434a491c258bf3b4a7d8e9af88e737938))
+* test ([fa14a49](https://github.com/AESInsight/Backend/commit/fa14a49e52720702cbf74d5d1dcff52254f59607))
+* test ([4fbe705](https://github.com/AESInsight/Backend/commit/4fbe7053af1d80af1a9461067420747432d73274))
+* Test password reset controller ([3ccca8a](https://github.com/AESInsight/Backend/commit/3ccca8a1c25c9b19a9bac4a38c5256cf5eb78c13))
+* Unit test company and employee service ([132eba2](https://github.com/AESInsight/Backend/commit/132eba27c3e43f4f48adb032356220aa97cbca53))
+
 ## [1.10.2](https://github.com/AESInsight/Backend/compare/v1.10.1...v1.10.2) (2025-05-26)
 
 
