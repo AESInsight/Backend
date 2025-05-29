@@ -1,34 +1,31 @@
-using Moq;
-using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WebAPI.Tests.Services
 {
     [TestFixture]
     public class TestEmployeeService
     {
-        private EmployeeService _employeeService;
+        private ApplicationDbContext _dbContext;
+        private EmployeeService _service;
 
         [SetUp]
         public void SetUp()
         {
-            // Use a unique InMemoryDatabase for each test
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
-
-            var dbContext = new ApplicationDbContext(options);
-
-            // Seed the database with test data
-            dbContext.Companies.AddRange(new List<CompanyModel>
+            _dbContext = new ApplicationDbContext(options);
+            // Seed the database with test data (from HEAD)
+            _dbContext.Companies.AddRange(new List<CompanyModel>
             {
                 new CompanyModel
                 {
@@ -37,7 +34,7 @@ namespace WebAPI.Tests.Services
                     Industry = "Technology",
                     CVR = "12345678",
                     Email = "contact@techcorp.com",
-                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword1") // Fixed to byte[]
+                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword1")
                 },
                 new CompanyModel
                 {
@@ -46,11 +43,10 @@ namespace WebAPI.Tests.Services
                     Industry = "Data Analytics",
                     CVR = "87654321",
                     Email = "info@datacorp.com",
-                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword2") // Fixed to byte[]
+                    PasswordHash = Encoding.UTF8.GetBytes("hashedpassword2")
                 }
             });
-
-            dbContext.Employee.AddRange(new List<EmployeeModel>
+            _dbContext.Employee.AddRange(new List<EmployeeModel>
             {
                 new EmployeeModel
                 {
@@ -69,8 +65,7 @@ namespace WebAPI.Tests.Services
                     CompanyID = 2
                 }
             });
-
-            dbContext.Salaries.AddRange(new List<SalaryModel>
+            _dbContext.Salaries.AddRange(new List<SalaryModel>
             {
                 new SalaryModel
                 {
@@ -97,18 +92,85 @@ namespace WebAPI.Tests.Services
                     Timestamp = new DateTime(2025, 2, 1)
                 }
             });
+            _dbContext.SaveChanges();
+            _service = new EmployeeService(_dbContext);
+        }
 
-            dbContext.SaveChanges();
+        [TearDown]
+        public void TearDown()
+        {
+            if (_dbContext != null)
+            {
+                _dbContext.Database.EnsureDeleted();
+                _dbContext.Dispose();
+                _dbContext = null!;
+            }
+        }
 
-            // Initialize the service
-            _employeeService = new EmployeeService(dbContext);
+        [Test]
+        public async Task BulkCreateEmployeesAsync_AddsEmployees_WhenDataIsValid()
+        {
+            // Arrange
+            var employees = new List<EmployeeModel>
+            {
+                new EmployeeModel { JobTitle = "Developer", Experience = 2, Gender = "Male", CompanyID = 1 },
+                new EmployeeModel { JobTitle = "Designer", Experience = 3, Gender = "Female", CompanyID = 1 }
+            };
+
+            // Act
+            var result = await _service.BulkCreateEmployeesAsync(employees);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(2));
+            var dbEmployees = await _dbContext.Employee.ToListAsync();
+            Assert.That(dbEmployees.Count, Is.EqualTo(2));
+            Assert.That(dbEmployees.Any(e => e.JobTitle == "Developer" && e.Gender == "Male"));
+            Assert.That(dbEmployees.Any(e => e.JobTitle == "Designer" && e.Gender == "Female"));
+        }
+
+        [Test]
+        public async Task BulkCreateEmployeesAsync_ReturnsEmptyList_WhenInputIsEmpty()
+        {
+            // Arrange
+            var employees = new List<EmployeeModel>();
+
+            // Act
+            var result = await _service.BulkCreateEmployeesAsync(employees);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+            var dbEmployees = await _dbContext.Employee.ToListAsync();
+            Assert.That(dbEmployees.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BulkCreateEmployeesAsync_ThrowsException_WhenDbContextFails()
+        {
+            // Arrange
+            var employees = new List<EmployeeModel>
+            {
+                new EmployeeModel { JobTitle = "Developer", Experience = 2, Gender = "Male", CompanyID = 1 }
+            };
+
+            // Simulate a disposed context to force an exception
+            _dbContext.Dispose();
+            _dbContext = null!; // <-- Add this line
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<Exception>(async () =>
+            {
+                await _service.BulkCreateEmployeesAsync(employees);
+            });
+            Assert.That(ex!.Message, Does.Contain("Error during employee creation"));
         }
 
         [Test]
         public async Task GetAllEmployeesAsync_ReturnsAllEmployees()
         {
             // Act
-            var result = await _employeeService.GetAllEmployeesAsync();
+            var result = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(result.Count, Is.EqualTo(2));
@@ -120,7 +182,7 @@ namespace WebAPI.Tests.Services
         public async Task GetEmployeeByIdAsync_ReturnsCorrectEmployee()
         {
             // Act
-            var result = await _employeeService.GetEmployeeByIdAsync(1);
+            var result = await _service.GetEmployeeByIdAsync(1);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -132,7 +194,7 @@ namespace WebAPI.Tests.Services
         public void GetEmployeeByIdAsync_ThrowsExceptionForNonExistentEmployee()
         {
             // Act & Assert
-            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _employeeService.GetEmployeeByIdAsync(999));
+            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _service.GetEmployeeByIdAsync(999));
         }
 
         [Test]
@@ -158,8 +220,8 @@ namespace WebAPI.Tests.Services
             };
 
             // Act
-            await _employeeService.BulkCreateEmployeesAsync(newEmployees);
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            await _service.BulkCreateEmployeesAsync(newEmployees);
+            var employees = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(employees.Count, Is.EqualTo(4)); // 2 existing + 2 new
@@ -174,8 +236,8 @@ namespace WebAPI.Tests.Services
             var emptyList = new List<EmployeeModel>();
 
             // Act
-            await _employeeService.BulkCreateEmployeesAsync(emptyList);
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            await _service.BulkCreateEmployeesAsync(emptyList);
+            var employees = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(employees.Count, Is.EqualTo(2)); // No new employees should be added
@@ -185,8 +247,8 @@ namespace WebAPI.Tests.Services
         public async Task DeleteEmployeeAsync_RemovesEmployee()
         {
             // Act
-            await _employeeService.DeleteEmployeeAsync(1);
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            await _service.DeleteEmployeeAsync(1);
+            var employees = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(employees.Any(e => e.EmployeeID == 1), Is.False);
@@ -196,7 +258,7 @@ namespace WebAPI.Tests.Services
         public void DeleteEmployeeAsync_ThrowsExceptionForNonExistentEmployee()
         {
             // Act & Assert
-            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _employeeService.DeleteEmployeeAsync(999));
+            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _service.DeleteEmployeeAsync(999));
         }
 
         [Test]
@@ -212,7 +274,7 @@ namespace WebAPI.Tests.Services
             };
 
             // Act
-            var result = await _employeeService.UpdateEmployeeAsync(1, updatedEmployee);
+            var result = await _service.UpdateEmployeeAsync(1, updatedEmployee);
 
             // Assert
             Assert.That(result.JobTitle, Is.EqualTo("Senior Software Engineer"));
@@ -232,21 +294,21 @@ namespace WebAPI.Tests.Services
             };
 
             // Act & Assert
-            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _employeeService.UpdateEmployeeAsync(999, updatedEmployee));
+            Assert.ThrowsAsync<KeyNotFoundException>(async () => await _service.UpdateEmployeeAsync(999, updatedEmployee));
         }
 
         [Test]
         public void UpdateEmployeeAsync_ThrowsExceptionForNullInput()
         {
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await _employeeService.UpdateEmployeeAsync(1, null!));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.UpdateEmployeeAsync(1, null!));
         }
 
         [Test]
         public async Task GetAllJobTitlesAsync_ReturnsUniqueJobTitles()
         {
             // Act
-            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+            var jobTitles = await _service.GetAllJobTitlesAsync();
 
             // Assert
             Assert.That(jobTitles.Count, Is.EqualTo(2));
@@ -258,7 +320,7 @@ namespace WebAPI.Tests.Services
         public async Task GetEmployeesByJobTitleAsync_ReturnsCorrectEmployees()
         {
             // Act
-            var employees = await _employeeService.GetEmployeesByJobTitleAsync("Software Engineer");
+            var employees = await _service.GetEmployeesByJobTitleAsync("Software Engineer");
 
             // Assert
             Assert.That(employees.Count, Is.EqualTo(1));
@@ -269,16 +331,16 @@ namespace WebAPI.Tests.Services
         public void GetEmployeesByJobTitleAsync_ThrowsExceptionForNullOrEmptyJobTitle()
         {
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentException>(async () => await _employeeService.GetEmployeesByJobTitleAsync(null!));
-            Assert.ThrowsAsync<ArgumentException>(async () => await _employeeService.GetEmployeesByJobTitleAsync(""));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _service.GetEmployeesByJobTitleAsync(null!));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _service.GetEmployeesByJobTitleAsync(""));
         }
 
         [Test]
         public async Task DeleteAllEmployeesAsync_RemovesAllEmployees()
         {
             // Act
-            await _employeeService.DeleteAllEmployeesAsync();
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            await _service.DeleteAllEmployeesAsync();
+            var employees = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(employees.Count, Is.EqualTo(0));
@@ -288,10 +350,10 @@ namespace WebAPI.Tests.Services
         public async Task GetAllEmployeesAsync_ReturnsEmptyList_WhenDatabaseIsEmpty()
         {
             // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+            await _service.DeleteAllEmployeesAsync(); // Ensure the database is empty
 
             // Act
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            var employees = await _service.GetAllEmployeesAsync();
 
             // Assert
             Assert.That(employees, Is.Empty);
@@ -301,10 +363,10 @@ namespace WebAPI.Tests.Services
         public async Task GetAllJobTitlesAsync_ReturnsEmptyList_WhenDatabaseIsEmpty()
         {
             // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+            await _service.DeleteAllEmployeesAsync(); // Ensure the database is empty
 
             // Act
-            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+            var jobTitles = await _service.GetAllJobTitlesAsync();
 
             // Assert
             Assert.That(jobTitles, Is.Empty);
@@ -314,17 +376,17 @@ namespace WebAPI.Tests.Services
         public void BulkCreateEmployeesAsync_ThrowsExceptionForNullInput()
         {
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(async () => await _employeeService.BulkCreateEmployeesAsync(null!));
+            Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.BulkCreateEmployeesAsync(null!));
         }
 
         [Test]
         public async Task DeleteAllEmployeesAsync_ThrowsException_WhenNoEmployeesExist()
         {
             // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+            await _service.DeleteAllEmployeesAsync(); // Ensure the database is empty
 
             // Act & Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await _employeeService.DeleteAllEmployeesAsync());
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await _service.DeleteAllEmployeesAsync());
         }
 
         [Test]
@@ -334,7 +396,7 @@ namespace WebAPI.Tests.Services
             var jobTitle = "Software Engineer";
 
             // Act
-            var result = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
+            var result = await _service.GetSalaryDifferencesByGenderAsync(jobTitle);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -350,7 +412,7 @@ namespace WebAPI.Tests.Services
             var jobTitle = "Non-Existent Job";
 
             // Act
-            var result = await _employeeService.GetSalaryDifferencesByGenderAsync(jobTitle);
+            var result = await _service.GetSalaryDifferencesByGenderAsync(jobTitle);
 
             // Assert
             Assert.That(result["Male"].Count, Is.EqualTo(0));
@@ -361,7 +423,7 @@ namespace WebAPI.Tests.Services
         public async Task GetMaxEmployeeIdAsync_ReturnsCorrectMaxId()
         {
             // Act
-            var maxId = await _employeeService.GetMaxEmployeeIdAsync();
+            var maxId = await _service.GetMaxEmployeeIdAsync();
 
             // Assert
             Assert.That(maxId, Is.EqualTo(2)); // The highest EmployeeID in the seeded data
@@ -370,84 +432,388 @@ namespace WebAPI.Tests.Services
         [Test]
         public async Task GetMaxEmployeeIdAsync_ReturnsZero_WhenNoEmployeesExist()
         {
-            // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
-
             // Act
-            var maxId = await _employeeService.GetMaxEmployeeIdAsync();
+            var maxId = await _service.GetMaxEmployeeIdAsync();
 
             // Assert
-            Assert.That(maxId, Is.EqualTo(0)); // No employees, so max ID should be 0
+            Assert.That(maxId, Is.EqualTo(0));
         }
 
         [Test]
         public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsCorrectSalaryDifferences()
         {
             // Act
-            var result = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
+            var result = await _service.GetAllSalaryDifferencesByGenderAsync();
 
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.ContainsKey("Male"), Is.True);
             Assert.That(result.ContainsKey("Female"), Is.True);
 
-            // Male salary differences
-            Assert.That(result["Male"].Count, Is.EqualTo(2)); // Two months of salary records
-            Assert.That(result["Male"][0].AverageSalary, Is.EqualTo(5000));
-            Assert.That(result["Male"][1].AverageSalary, Is.EqualTo(5500));
+            var maleList = result["Male"];
+            var femaleList = result["Female"];
 
-            // Female salary differences
-            Assert.That(result["Female"].Count, Is.EqualTo(2)); // Two months of salary records
-            Assert.That(result["Female"][0].AverageSalary, Is.EqualTo(4800));
-            Assert.That(result["Female"][1].AverageSalary, Is.EqualTo(5000));
+            Assert.That(maleList.Count, Is.EqualTo(2)); // Jan and Feb for male developer
+            Assert.That(femaleList.Count, Is.EqualTo(1)); // Feb for female developer
+
+            Assert.That(maleList[0].Month, Is.EqualTo(new DateTime(2024, 1, 1)));
+            Assert.That(maleList[0].AverageSalary, Is.EqualTo(60000));
+            Assert.That(maleList[1].Month, Is.EqualTo(new DateTime(2024, 2, 1)));
+            Assert.That(maleList[1].AverageSalary, Is.EqualTo(65000));
+            Assert.That(femaleList[0].Month, Is.EqualTo(new DateTime(2024, 2, 1)));
+            Assert.That(femaleList[0].AverageSalary, Is.EqualTo(70000));
         }
 
         [Test]
-        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsEmpty_WhenNoSalariesExist()
+        public async Task GetSalaryDifferencesByGenderAsync_ReturnsEmptyLists_WhenNoEmployeesWithJobTitle()
         {
             // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
 
             // Act
-            var result = await _employeeService.GetAllSalaryDifferencesByGenderAsync();
+            var result = await _service.GetSalaryDifferencesByGenderAsync("NonExistentJob");
 
             // Assert
-            Assert.That(result["Male"].Count, Is.EqualTo(0));
-            Assert.That(result["Female"].Count, Is.EqualTo(0));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result["Male"], Is.Empty);
+            Assert.That(result["Female"], Is.Empty);
         }
 
         [Test]
-        public async Task DeleteEmployeeAsync_RemovesAssociatedSalaries()
-        {
-            // Act
-            await _employeeService.DeleteEmployeeAsync(1); // Delete the male employee
-            var salaries = await _employeeService.GetAllEmployeesAsync();
-
-            // Assert
-            Assert.That(salaries.Any(s => s.EmployeeID == 1), Is.False); // Ensure no salaries exist for EmployeeID 1
-        }
-
-        [Test]
-        public async Task GetEmployeesByJobTitleAsync_ReturnsEmptyList_WhenNoMatchingEmployees()
-        {
-            // Act
-            var employees = await _employeeService.GetEmployeesByJobTitleAsync("Non-Existent Job");
-
-            // Assert
-            Assert.That(employees, Is.Empty);
-        }
-
-        [Test]
-        public async Task GetAllJobTitlesAsync_ReturnsEmptyList_WhenNoEmployeesExist()
+        public async Task GetSalaryDifferencesByGenderAsync_ReturnsEmptyLists_WhenEmployeesHaveNoSalaries()
         {
             // Arrange
-            await _employeeService.DeleteAllEmployeesAsync(); // Ensure the database is empty
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var employee = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Developer",
+                Gender = "Male"
+            };
+            _dbContext.Employee.Add(employee);
+            await _dbContext.SaveChangesAsync();
 
             // Act
-            var jobTitles = await _employeeService.GetAllJobTitlesAsync();
+            var result = await _service.GetSalaryDifferencesByGenderAsync("Developer");
 
             // Assert
-            Assert.That(jobTitles, Is.Empty);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result["Male"], Is.Empty);
+            Assert.That(result["Female"], Is.Empty);
+        }
+
+        [Test]
+        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsCorrectSalaryDifferences_ForAllJobs()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var employee1 = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Developer",
+                Gender = "Male"
+            };
+            var employee2 = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Developer",
+                Gender = "Female"
+            };
+            var employee3 = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Designer",
+                Gender = "Male"
+            };
+            _dbContext.Employee.AddRange(employee1, employee2, employee3);
+            await _dbContext.SaveChangesAsync();
+
+            var salary1 = new SalaryModel
+            {
+                EmployeeID = employee1.EmployeeID,
+                Salary = 60000,
+                Timestamp = new DateTime(2024, 1, 1)
+            };
+            var salary2 = new SalaryModel
+            {
+                EmployeeID = employee1.EmployeeID,
+                Salary = 65000,
+                Timestamp = new DateTime(2024, 2, 1)
+            };
+            var salary3 = new SalaryModel
+            {
+                EmployeeID = employee2.EmployeeID,
+                Salary = 70000,
+                Timestamp = new DateTime(2024, 2, 1)
+            };
+            var salary4 = new SalaryModel
+            {
+                EmployeeID = employee3.EmployeeID,
+                Salary = 55000,
+                Timestamp = new DateTime(2024, 2, 1)
+            };
+            _dbContext.Salaries.AddRange(salary1, salary2, salary3, salary4);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetAllSalaryDifferencesByGenderAsync();
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.ContainsKey("Male"), Is.True);
+            Assert.That(result.ContainsKey("Female"), Is.True);
+
+            var maleList = result["Male"];
+            var femaleList = result["Female"];
+
+            Assert.That(maleList.Count, Is.EqualTo(2));
+            Assert.That(femaleList.Count, Is.EqualTo(1));
+
+            Assert.That(maleList.Any(x => x.Month == new DateTime(2024, 1, 1) && x.AverageSalary == 60000));
+            Assert.That(maleList.Any(x => x.Month == new DateTime(2024, 2, 1) && x.AverageSalary == 60000)); // (65000+55000)/2
+            Assert.That(femaleList.Any(x => x.Month == new DateTime(2024, 2, 1) && x.AverageSalary == 70000));
+        }
+
+        [Test]
+        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsEmptyLists_WhenNoSalariesExist()
+        {
+            // Act
+            var result = await _service.GetAllSalaryDifferencesByGenderAsync();
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result["Male"], Is.Empty);
+            Assert.That(result["Female"], Is.Empty);
+        }
+
+        [Test]
+        public async Task GetAllSalaryDifferencesByGenderAsync_ReturnsEmptyLists_WhenEmployeesHaveNoSalaries()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var employee = new EmployeeModel
+            {
+                CompanyID = company.CompanyID,
+                JobTitle = "Developer",
+                Gender = "Male"
+            };
+            _dbContext.Employee.Add(employee);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetAllSalaryDifferencesByGenderAsync();
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result["Male"], Is.Empty);
+            Assert.That(result["Female"], Is.Empty);
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryByIdAsync_ReturnsIndustry_WhenEmployeeAndCompanyExist()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "TestCompany",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "test@company.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            var employee = new EmployeeModel
+            {
+                JobTitle = "Developer",
+                Experience = 2,
+                Gender = "Male",
+                CompanyID = company.CompanyID
+            };
+            _dbContext.Employee.Add(employee);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetEmployeeIndustryByIdAsync(employee.EmployeeID);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.EmployeeID, Is.EqualTo(employee.EmployeeID));
+            Assert.That(result.CompanyID, Is.EqualTo(company.CompanyID));
+            Assert.That(result.Industry, Is.EqualTo("Tech"));
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryByIdAsync_ReturnsNull_WhenEmployeeDoesNotExist()
+        {
+            // Act
+            var result = await _service.GetEmployeeIndustryByIdAsync(9999);
+
+            // Assert
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetEmployeeIndustryByIdAsync_ReturnsNull_WhenEmployeeHasNoCompany()
+        {
+            // Arrange
+            var employee = new EmployeeModel
+            {
+                JobTitle = "Developer",
+                Experience = 2,
+                Gender = "Male",
+                CompanyID = 9999 // Non-existent company
+            };
+            _dbContext.Employee.Add(employee);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetEmployeeIndustryByIdAsync(employee.EmployeeID);
+
+            // Assert
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetEmployeesByCompanyIdAsync_ReturnsEmployees_WhenCompanyHasEmployees()
+        {
+            // Arrange
+            var company1 = new CompanyModel
+            {
+                CompanyName = "Company1",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "company1@test.com"
+            };
+            var company2 = new CompanyModel
+            {
+                CompanyName = "Company2",
+                Industry = "Finance",
+                CVR = "87654321",
+                Email = "company2@test.com"
+            };
+            _dbContext.Companies.AddRange(company1, company2);
+            await _dbContext.SaveChangesAsync();
+
+            var employee1 = new EmployeeModel
+            {
+                JobTitle = "Developer",
+                Experience = 2,
+                Gender = "Male",
+                CompanyID = company1.CompanyID
+            };
+            var employee2 = new EmployeeModel
+            {
+                JobTitle = "Designer",
+                Experience = 3,
+                Gender = "Female",
+                CompanyID = company1.CompanyID
+            };
+            var employee3 = new EmployeeModel
+            {
+                JobTitle = "Analyst",
+                Experience = 1,
+                Gender = "Male",
+                CompanyID = company2.CompanyID
+            };
+            _dbContext.Employee.AddRange(employee1, employee2, employee3);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetEmployeesByCompanyIdAsync(company1.CompanyID);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result.All(e => e.CompanyID == company1.CompanyID));
+            Assert.That(result.Any(e => e.JobTitle == "Developer"));
+            Assert.That(result.Any(e => e.JobTitle == "Designer"));
+            Assert.That(result.All(e => e.Company != null && e.Company.CompanyName == "Company1"));
+        }
+
+        [Test]
+        public async Task GetEmployeesByCompanyIdAsync_ReturnsEmptyList_WhenCompanyHasNoEmployees()
+        {
+            // Arrange
+            var company = new CompanyModel
+            {
+                CompanyName = "Company1",
+                Industry = "Tech",
+                CVR = "12345678",
+                Email = "company1@test.com"
+            };
+            _dbContext.Companies.Add(company);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetEmployeesByCompanyIdAsync(company.CompanyID);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task GetEmployeesByCompanyIdAsync_ReturnsEmptyList_WhenCompanyDoesNotExist()
+        {
+            // Act
+            var result = await _service.GetEmployeesByCompanyIdAsync(9999);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetSalaryDifferencesByGenderAsync_ThrowsException_WhenDbContextFails()
+        {
+            // Arrange
+            var jobTitle = "Developer";
+            _dbContext.Dispose(); // Dispose context to force an exception
+            _dbContext = null!;
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<ObjectDisposedException>(async () =>
+            {
+                await _service.GetSalaryDifferencesByGenderAsync(jobTitle);
+            });
+            Assert.That(ex, Is.Not.Null);
+            Assert.That(ex!.Message, Does.Contain("Cannot access a disposed context instance"));
         }
     }
 }

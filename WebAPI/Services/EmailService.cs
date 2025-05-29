@@ -56,7 +56,8 @@ public class EmailService : IEmailService
                 <h2>Password Reset Request</h2>
                 <p>Hello {company.CompanyName},</p>
                 <p>You have requested to reset your password for your AES Insight account.</p>
-                <p>To reset your password, please click the button below:</p>
+                <p>Please click the following reset-password button to go to our website:</p>
+                
 
                 <div style='margin: 24px 0; text-align: center;'>
                     <a href='https://aes-insight.dk/reset-password?token={resetToken}'
@@ -84,7 +85,7 @@ public class EmailService : IEmailService
 
         using var client = new SmtpClient();
         await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
-        
+
         // Use our fixed one.com credentials
         await client.AuthenticateAsync("cff@aes-insight.dk", "#SecurePassword123");
         await client.SendAsync(message);

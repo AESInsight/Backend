@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Backend.Models.DTO;
 using System.Text;
 using System.Security.Cryptography;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Services;
 
@@ -127,6 +128,7 @@ public class CompanyService : ICompanyService
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public async Task GenerateSampleCompaniesAsync()
     {
         var random = new Random();

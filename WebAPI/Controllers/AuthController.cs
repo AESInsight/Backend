@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 
 using BCrypt.Net;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers
 {
@@ -34,7 +35,10 @@ namespace Backend.Controllers
             if (user != null && VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 var token = GenerateJwtToken(user.Email, user.Role);
-                return Ok(new { Token = token });
+                return Ok(new { 
+                    Token = token,
+                    CompanyID = user.CompanyID  // Add the company ID to the response
+                });
             }
 
             return Unauthorized();
@@ -120,13 +124,14 @@ namespace Backend.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
-
+    [ExcludeFromCodeCoverage]
     public class LoginRequest
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 
+    [ExcludeFromCodeCoverage]
     public class RegisterRequest
     {
         public string Email { get; set; } = null!;

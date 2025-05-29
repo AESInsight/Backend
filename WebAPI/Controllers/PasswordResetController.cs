@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
@@ -134,11 +135,13 @@ public class PasswordResetController : ControllerBase
     }
 }
 
+[ExcludeFromCodeCoverage]
 public class PasswordResetRequest
 {
     public string Email { get; set; } = null!;
 }
 
+[ExcludeFromCodeCoverage]
 public class ResetPasswordRequest
 {
     public string Token { get; set; } = null!;
@@ -146,6 +149,7 @@ public class ResetPasswordRequest
     public string ConfirmPassword { get; set; } = null!;
 }
 
+[ExcludeFromCodeCoverage]
 public class VerifyPasswordRequest
 {
     public string Email { get; set; } = null!;

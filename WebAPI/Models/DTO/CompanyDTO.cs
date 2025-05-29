@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Models.DTO;
 
+[ExcludeFromCodeCoverage]
 public class CompanyDTO
 {
     [ExcludeFromCodeCoverage]

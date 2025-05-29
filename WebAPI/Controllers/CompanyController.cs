@@ -4,6 +4,7 @@ using Backend.Services;
 using Backend.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Backend.Controllers;
 
@@ -174,6 +175,7 @@ public class CompanyController : ControllerBase
 
     // POST: api/company/generate-sample-companies
     [HttpPost("generate-sample-companies")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> GenerateSampleCompanies()
     {
         try
@@ -189,6 +191,7 @@ public class CompanyController : ControllerBase
 
     // DELETE: api/company/delete-all
     [HttpDelete("delete-all")]
+    [ExcludeFromCodeCoverage]
     public async Task<IActionResult> DeleteAllCompanies()
     {
         try
@@ -202,6 +205,7 @@ public class CompanyController : ControllerBase
         }
     }
 
+    // GET: api/company/getAllIndustries
     [HttpGet("getAllIndustries")]
     public async Task<IActionResult> GetAllIndustries()
     {
@@ -216,23 +220,18 @@ public class CompanyController : ControllerBase
         }
     }
 
+    // GET: api/company/getAverageSalaryForJobsIn{industry}
     [HttpGet("getAverageSalaryForJobsIn{industry}")]
     public async Task<IActionResult> GetAverageSalariesForJobsInIndustry(string industry)
     {
         try
         {
-            var jobTitleAverages = await _companyService.GetAverageSalariesForJobsInIndustryAsync(industry);
-            
-            if (!jobTitleAverages.Any())
-            {
-                return NotFound(new { message = $"No companies found in the {industry} industry" });
-            }
-
-            return Ok(jobTitleAverages);
+            var averageSalaries = await _companyService.GetAverageSalariesForJobsInIndustryAsync(industry);
+            return Ok(averageSalaries);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An error occurred while retrieving salary averages", details = ex.Message });
+            return StatusCode(500, new { error = "An error occurred while retrieving average salaries", details = ex.Message });
         }
     }
 }

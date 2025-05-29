@@ -6,11 +6,13 @@ on:
       - main
       - develop
       - feat/**
+      - fix/**
   pull_request:
     branches:
       - main
       - develop
       - feat/**
+      - fix/**
 
 jobs:
   test-and-coverage:
@@ -32,6 +34,7 @@ jobs:
         run: |
           dotnet test ./WebAPI.Tests/WebAPI.Tests.csproj \
             --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Program.cs" \
             --logger "trx;LogFileName=TestResults/test-results.trx"
 
       - name: Install ReportGenerator
