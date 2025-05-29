@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/AESInsight/Backend/compare/v2.0.1...v2.0.2) (2025-05-29)
+
+
+### Bug Fixes
+
+* adds coverage and integration testing ([7603fec](https://github.com/AESInsight/Backend/commit/7603feca85907b67d4ba06da5840c77cde39386d))
+
 ## [2.0.1](https://github.com/AESInsight/Backend/compare/v2.0.0...v2.0.1) (2025-05-29)
 
 
