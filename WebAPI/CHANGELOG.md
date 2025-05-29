@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/AESInsight/Backend/compare/v1.11.0...v2.0.0) (2025-05-29)
+
+
+* BREAKING CHANGE: release 2.0 ([1c6ef7a](https://github.com/AESInsight/Backend/commit/1c6ef7ac55ae619cae387f69e34c3371fbfd9e86))
+
+
+### BREAKING CHANGES
+
+* release 2.0
+
 # [1.11.0](https://github.com/AESInsight/Backend/compare/v1.10.4...v1.11.0) (2025-05-29)
 
 
